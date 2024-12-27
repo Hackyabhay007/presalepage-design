@@ -109,7 +109,7 @@ const PresaleHero = () => {
                 <div className="text-sm text-text-secondary">
                   Presale tokens will be locked for 30 days after listing. 
                   <a href="#" className="text-accent-400 hover:text-accent-300 ml-1">
-                    Learn more
+                   Buy Now
                   </a>
                 </div>
               </div>

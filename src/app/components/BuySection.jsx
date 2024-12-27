@@ -1,13 +1,10 @@
 'use client';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   WalletIcon, 
   ArrowRightIcon, 
-  RefreshCwIcon, 
-  InfoIcon,
-  EthernetIcon,
-  AlertCircleIcon
+  InfoIcon
 } from 'lucide-react';
 
 // Network configurations
@@ -89,37 +86,20 @@ export default function BuySection() {
 
   return (
     <div className="relative min-h-screen bg-background py-20">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 bg-grid-white/[0.02]" />
-      <motion.div
-        animate={{
-          background: [
-            'radial-gradient(circle at 50% 50%, rgba(157, 78, 221, 0.1), transparent 70%)',
-            'radial-gradient(circle at 60% 60%, rgba(157, 78, 221, 0.15), transparent 70%)',
-            'radial-gradient(circle at 50% 50%, rgba(157, 78, 221, 0.1), transparent 70%)',
-          ],
-        }}
-        transition={{ duration: 5, repeat: Infinity }}
-        className="absolute inset-0"
-      />
-
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl mx-auto"
         >
-          {/* Buy Card */}
           <div id='#buy' className="bg-background-elevated/50 backdrop-blur-xl rounded-3xl 
             border border-accent-500/20 shadow-2xl overflow-hidden">
             
-            {/* Card Header */}
             <div className="p-6 border-b border-accent-500/20">
               <h2 className="text-2xl font-bold text-text">Buy Tokens</h2>
               <p className="text-text-secondary mt-1">Select network and token to continue</p>
             </div>
 
-            {/* Network Selection */}
             <div className="p-6 border-b border-accent-500/20">
               <label className="block text-sm font-medium text-text-secondary mb-3">
                 Select Network
@@ -143,22 +123,12 @@ export default function BuySection() {
                       <img src={network.icon} alt={network.name} className="w-8 h-8 mb-2" />
                       <span className="text-sm font-medium text-text">{network.name}</span>
                     </div>
-                    {selectedNetwork === key && (
-                      <motion.div
-                        layoutId="networkIndicator"
-                        className="absolute inset-0 border-2 border-accent-500 rounded-xl"
-                        initial={false}
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      />
-                    )}
                   </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Token Selection and Amount */}
             <div className="p-6 space-y-6">
-              {/* Token Selection */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-3">
                   Select Token
@@ -169,9 +139,9 @@ export default function BuySection() {
                       key={token.id}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => setSelectedToken(token)}
+                      onClick={() => setSelectedToken(token.symbol)}
                       className={`relative rounded-xl p-4 border transition-all duration-200
-                        ${selectedToken === token 
+                        ${selectedToken === token.symbol
                           ? 'border-accent-500 bg-accent-500/10' 
                           : 'border-accent-500/20 hover:border-accent-500/40'}`}
                     >
@@ -188,7 +158,6 @@ export default function BuySection() {
                 </div>
               </div>
 
-              {/* Amount Input */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-3">
                   Enter Amount
@@ -212,7 +181,6 @@ export default function BuySection() {
                 </div>
               </div>
 
-              {/* Token Amount Display */}
               <motion.div
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -221,12 +189,11 @@ export default function BuySection() {
                 <div className="flex justify-between items-center">
                   <span className="text-text-secondary">You will receive:</span>
                   <span className="text-xl font-bold text-accent-400">
-                    {tokenAmount} TOKEN
+                    {tokenAmount} $SFI
                   </span>
                 </div>
               </motion.div>
 
-              {/* Buy Button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -247,7 +214,6 @@ export default function BuySection() {
               </motion.button>
             </div>
 
-            {/* Info Section */}
             <div className="p-6 bg-background-elevated/50 border-t border-accent-500/20">
               <div className="flex items-start space-x-3">
                 <InfoIcon className="w-5 h-5 text-accent-400 mt-0.5 flex-shrink-0" />
@@ -259,32 +225,6 @@ export default function BuySection() {
               </div>
             </div>
           </div>
-
-          {/* Network Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4"
-          >
-            {Object.entries(networks).map(([key, network]) => (
-              <div
-                key={key}
-                className="bg-background-elevated/30 backdrop-blur-sm rounded-xl 
-                  border border-accent-500/20 p-4"
-              >
-                <div className="flex items-center space-x-3">
-                  <img src={network.icon} alt={network.name} className="w-6 h-6" />
-                  <div>
-                    <div className="text-sm font-medium text-text">{network.name}</div>
-                    <div className="text-xs text-text-secondary">
-                      Chain ID: {network.chainId}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </motion.div>
         </motion.div>
       </div>
     </div>

@@ -99,7 +99,7 @@ export default function CyberNavbar() {
                       src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg" 
                       alt="SpringFi Logo"
                       width={120}  // Increased from 100
-                      height={120}  // Increased from 40
+                      height={90}  // Increased from 40
                       />
                     </motion.div>
                   
