@@ -18,7 +18,8 @@ import {
   Gem,
   MailQuestion,
   Waypoints,
-  Telescope
+  Telescope,
+  X
 } from 'lucide-react';
 
 import Image from 'next/image'
