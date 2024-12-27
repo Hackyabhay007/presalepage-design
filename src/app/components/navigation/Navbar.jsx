@@ -21,6 +21,8 @@ import {
   Telescope
 } from 'lucide-react';
 
+import Image from 'next/image'
+
 const menuItems = [
   { name: 'Buy', href: '#buy', icon: Gem },
   { name: 'Vision', href: '#vision', icon: Telescope },
@@ -29,11 +31,22 @@ const menuItems = [
   { name: 'FAQ', href: '#faq', icon: MailQuestion },
 ];
 
-
-
 export default function CyberNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const scrollToSection = (e, href) => {
+    e.preventDefault();
+    const element = document.querySelector(href);
+    if (element) {
+      const offsetTop = element.offsetTop;
+      window.scrollTo({
+        top: offsetTop - 80, // Adjust for navbar height
+        behavior: 'smooth'
+      });
+      setIsOpen(false);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -68,40 +81,32 @@ export default function CyberNavbar() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo Section */}
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center space-x-2"
-          >
-            <Link href="/" className="flex items-center space-x-3">
-              <motion.div
-                animate={{
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  duration: 20,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-                className="relative w-10 h-10"
-              >
-                <Power 
-                  className="w-8 h-8 text-accent-400 absolute 
-                  top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" 
-                />
-              </motion.div>
-              <div className="flex flex-col">
-                <span className="text-2xl font-bold tracking-wider text-text">
-                  NEXUS
-                </span>
-                <span className="text-xs tracking-widest text-accent-400 uppercase">
-                  Blockchain
-                </span>
-              </div>
-            </Link>
-          </motion.div>
+         
+                <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center space-x-2"
+                >
+                  <Link href="/" className="flex items-center space-x-3">
+                    <motion.div
+                    transition={{
+                      duration: 20,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                    className="relative" // Increased from w-10 h-10
+                    >
+                      <Image 
+                      src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg" 
+                      alt="SpringFi Logo"
+                      width={120}  // Increased from 100
+                      height={120}  // Increased from 40
+                      />
+                    </motion.div>
+                  
+                  </Link>
+                </motion.div>
 
-          {/* Desktop Navigation */}
+                {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             {menuItems.map((item) => (
               <motion.div

@@ -48,7 +48,7 @@ export function TokenDashboard() {
   const holdings = [
     {
       id: 1,
-      name: 'NEXUS Token',
+      name: 'SPRINGFI Token',
       symbol: 'NXS',
       purchasedAmount: 50000,
       purchasePrice: 0.00001,

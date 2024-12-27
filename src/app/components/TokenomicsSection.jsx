@@ -24,7 +24,7 @@ const tokenDistribution = [
 
   // Token details
   const tokenDetails = [
-    { label: 'Token Symbol', value: '$NEXUS' },
+    { label: 'Token Symbol', value: '$SFI' },
     { label: 'Total Supply', value: '1,000,000,000' },
     { label: 'Decimals', value: '18' },
     { label: 'Initial Price', value: '$0.001' },

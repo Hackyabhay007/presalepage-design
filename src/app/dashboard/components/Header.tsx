@@ -2,9 +2,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { 
   Wallet, 
-  Power, 
   ChevronDown, 
   ExternalLink, 
   Copy, 
@@ -99,28 +99,23 @@ export function Header() {
             >
               <div className="relative">
                 <motion.div
-                  animate={{
-                    rotate: [0, 360],
-                  }}
+              
                   transition={{
                     duration: 20,
                     repeat: Infinity,
                     ease: "linear"
                   }}
-                  className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center"
+                  className=" flex items-center justify-center"
                 >
-                  <Power className="w-5 h-5 text-accent absolute" />
+                     <Image 
+                        src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg" 
+                        alt="SpringFi Logo"
+                        width={120}  // Increased from 100
+                        height={120}  // Increased from 40
+                      />
                 </motion.div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold bg-clip-text text-transparent 
-                  bg-gradient-to-r from-accent to-purple-500">
-                  LaunchPad
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Next-Gen Token Platform
-                </span>
-              </div>
+            
             </motion.div>
 
             {/* Wallet Section */}

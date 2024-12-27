@@ -13,6 +13,7 @@ import {
   Box,
   Rocket
 } from 'lucide-react';
+import Image from 'next/image'
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -62,10 +63,12 @@ const Footer = () => {
               className="flex items-center space-x-2"
               whileHover={{ scale: 1.05 }}
             >
-              <Rocket className="w-8 h-8 text-accent" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-accent to-purple-500 text-transparent bg-clip-text">
-                LaunchPad
-              </span>
+               <Image 
+                                   src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg" 
+                                   alt="SpringFi Logo"
+                                   width={120}  // Increased from 100
+                                   height={120}  // Increased from 40
+                                   />
             </motion.div>
             <p className="text-muted-foreground">
               Revolutionizing blockchain presales with secure, transparent, and efficient token launches.

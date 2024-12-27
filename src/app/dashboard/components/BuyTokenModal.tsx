@@ -71,102 +71,61 @@ const networks: Network[] = [
 
 // Token definitions with icons
 const tokens: Record<string, Token[]> = {
-    eth: [
-      { 
-        id: 'eth', 
-        symbol: 'ETH', 
-        name: 'Ethereum', 
-        price: 2000, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/eth.png', 
-        decimals: 18 
-      },
-      { 
-        id: 'usdt', 
-        symbol: 'USDT', 
-        name: 'Tether USD', 
-        price: 1, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/usdt.png', 
-        decimals: 6 
-      },
-      { 
-        id: 'usdc', 
-        symbol: 'USDC', 
-        name: 'USD Coin', 
-        price: 1, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/usdc.png', 
-        decimals: 6 
-      },
-      { 
-        id: 'wbtc', 
-        symbol: 'WBTC', 
-        name: 'Wrapped Bitcoin', 
-        price: 35000, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/wbtc.png', 
-        decimals: 8 
-      }
-    ],
-    bsc: [
-      { 
-        id: 'bnb', 
-        symbol: 'BNB', 
-        name: 'BNB', 
-        price: 300, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/bnb.png', 
-        decimals: 18 
-      },
-      { 
-        id: 'busd', 
-        symbol: 'BUSD', 
-        name: 'Binance USD', 
-        price: 1, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/busd.png', 
-        decimals: 18 
-      },
-      { 
-        id: 'cake', 
-        symbol: 'CAKE', 
-        name: 'PancakeSwap', 
-        price: 2, 
-        icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82/logo.png', 
-        decimals: 18 
-      }
-    ],
-    polygon: [
-      { 
-        id: 'matic', 
-        symbol: 'MATIC', 
-        name: 'Polygon', 
-        price: 1.5, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/matic.png', 
-        decimals: 18 
-      },
-      { 
-        id: 'usdc', 
-        symbol: 'USDC', 
-        name: 'USD Coin', 
-        price: 1, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/usdc.png', 
-        decimals: 6 
-      },
-      { 
-        id: 'aave', 
-        symbol: 'AAVE', 
-        name: 'Aave', 
-        price: 100, 
-        icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/aave.png', 
-        decimals: 18 
-      }
-    ]
-    
-  };
-  
-
-  
-
-
-// Add these component definitions before the main BuyTokenModal component:
-
-
+  eth: [
+    { 
+    id: 'eth', 
+    symbol: 'ETH', 
+    name: 'Ethereum', 
+    price: 2000, 
+    icon: 'cryptocurrency:eth', 
+    decimals: 18 
+    },
+    { 
+    id: 'usdt', 
+    symbol: 'USDT', 
+    name: 'Tether USD', 
+    price: 1, 
+    icon: 'cryptocurrency:usdt', 
+    decimals: 6 
+    }
+  ],
+  bsc: [
+    { 
+    id: 'bnb', 
+    symbol: 'BNB', 
+    name: 'BNB', 
+    price: 300, 
+    icon: 'cryptocurrency:bnb', 
+    decimals: 18 
+    },
+    { 
+    id: 'usdt', 
+    symbol: 'USDT', 
+    name: 'Tether USD', 
+    price: 1, 
+    icon: 'cryptocurrency:usdt', 
+    decimals: 6 
+    }
+  ],
+  polygon: [
+    { 
+    id: 'matic', 
+    symbol: 'MATIC', 
+    name: 'Polygon', 
+    price: 1.5, 
+    icon: 'cryptocurrency:matic', 
+    decimals: 18 
+    },
+    { 
+    id: 'usdt', 
+    symbol: 'USDT', 
+    name: 'Tether USD', 
+    price: 1, 
+    icon: 'cryptocurrency:usdt', 
+    decimals: 6 
+    }
+  ]
+};
   
 
 export function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {

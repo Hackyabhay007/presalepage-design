@@ -110,7 +110,7 @@ export default function BuySection() {
           className="max-w-2xl mx-auto"
         >
           {/* Buy Card */}
-          <div className="bg-background-elevated/50 backdrop-blur-xl rounded-3xl 
+          <div id='#buy' className="bg-background-elevated/50 backdrop-blur-xl rounded-3xl 
             border border-accent-500/20 shadow-2xl overflow-hidden">
             
             {/* Card Header */}
