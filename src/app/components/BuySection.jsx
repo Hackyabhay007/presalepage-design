@@ -1,88 +1,92 @@
-'use client';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  WalletIcon, 
-  ArrowRightIcon, 
-  InfoIcon
-} from 'lucide-react';
+"use client";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { WalletIcon, ArrowRightIcon, InfoIcon } from "lucide-react";
+
+// Rainbow components imports
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
 
 // Network configurations
 const networks = {
   eth: {
-    name: 'Ethereum',
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
-    color: '#627EEA',
+    name: "Ethereum",
+    icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
+    color: "#627EEA",
     tokens: [
       {
-        id: 'eth',
-        symbol: 'ETH',
-        icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png'
+        id: "eth",
+        symbol: "ETH",
+        icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
       },
       {
-        id: 'usdt_eth',
-        symbol: 'USDT',
-        icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png'
-      }
+        id: "usdt_eth",
+        symbol: "USDT",
+        icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/825.png",
+      },
     ],
-    chainId: '0x1'
+    chainId: "0x1",
   },
   bsc: {
-    name: 'BSC', 
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
-    color: '#F3BA2F',
+    name: "BSC",
+    icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png",
+    color: "#F3BA2F",
     tokens: [
       {
-        id: 'bnb',
-        symbol: 'BNB',
-        icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png'
+        id: "bnb",
+        symbol: "BNB",
+        icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png",
       },
       {
-        id: 'usdt_bsc',
-        symbol: 'USDT',
-        icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png'
-      }
+        id: "usdt_bsc",
+        symbol: "USDT",
+        icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/825.png",
+      },
     ],
-    chainId: '0x38'
+    chainId: "0x38",
   },
   matic: {
-    name: 'Polygon',
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png', 
-    color: '#8247E5',
+    name: "Polygon",
+    icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png",
+    color: "#8247E5",
     tokens: [
       {
-        id: 'matic',
-        symbol: 'MATIC',
-        icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png'
+        id: "matic",
+        symbol: "MATIC",
+        icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png",
       },
       {
-        id: 'usdt_polygon',
-        symbol: 'USDT',
-        icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png'
-      }
+        id: "usdt_polygon",
+        symbol: "USDT",
+        icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/825.png",
+      },
     ],
-    chainId: '0x89'
-  }
+    chainId: "0x89",
+  },
 };
 
 export default function BuySection() {
-  const [selectedNetwork, setSelectedNetwork] = useState('eth');
-  const [selectedToken, setSelectedToken] = useState(networks.eth.tokens[0].symbol);
-  const [amount, setAmount] = useState('');
-  const [tokenAmount, setTokenAmount] = useState('0');
-  
+  const [selectedNetwork, setSelectedNetwork] = useState("eth");
+  const [selectedToken, setSelectedToken] = useState(
+    networks.eth.tokens[0].symbol
+  );
+  const [amount, setAmount] = useState("");
+  const [tokenAmount, setTokenAmount] = useState("0");
+
   const calculateTokens = (value) => {
     // Example rate: 1 ETH = 50000 tokens
     const rates = {
       ETH: 50000,
       BNB: 150000,
       MATIC: 300000,
-      USDT: 1
+      USDT: 1,
     };
-    
+
     const rate = rates[selectedToken] || 1;
     return (parseFloat(value) * rate || 0).toFixed(2);
   };
+
+  const { isConnected } = useAccount();
 
   return (
     <div className="relative min-h-screen bg-background py-20">
@@ -92,12 +96,16 @@ export default function BuySection() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl mx-auto"
         >
-          <div id='#buy' className="bg-background-elevated/50 backdrop-blur-xl rounded-3xl 
-            border border-accent-500/20 shadow-2xl overflow-hidden">
-            
+          <div
+            id="#buy"
+            className="bg-background-elevated/50 backdrop-blur-xl rounded-3xl 
+            border border-accent-500/20 shadow-2xl overflow-hidden"
+          >
             <div className="p-6 border-b border-accent-500/20">
               <h2 className="text-2xl font-bold text-text">Buy Tokens</h2>
-              <p className="text-text-secondary mt-1">Select network and token to continue</p>
+              <p className="text-text-secondary mt-1">
+                Select network and token to continue
+              </p>
             </div>
 
             <div className="p-6 border-b border-accent-500/20">
@@ -110,18 +118,26 @@ export default function BuySection() {
                     key={key}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                      onClick={() => {
+                    onClick={() => {
                       setSelectedNetwork(key);
                       setSelectedToken(network.tokens[0].symbol);
                     }}
                     className={`relative rounded-xl p-4 border transition-all duration-200
-                      ${selectedNetwork === key 
-                        ? 'border-accent-500 bg-accent-500/10' 
-                        : 'border-accent-500/20 hover:border-accent-500/40'}`}
+                      ${
+                        selectedNetwork === key
+                          ? "border-accent-500 bg-accent-500/10"
+                          : "border-accent-500/20 hover:border-accent-500/40"
+                      }`}
                   >
                     <div className="flex flex-col items-center">
-                      <img src={network.icon} alt={network.name} className="w-8 h-8 mb-2" />
-                      <span className="text-sm font-medium text-text">{network.name}</span>
+                      <img
+                        src={network.icon}
+                        alt={network.name}
+                        className="w-8 h-8 mb-2"
+                      />
+                      <span className="text-sm font-medium text-text">
+                        {network.name}
+                      </span>
                     </div>
                   </motion.button>
                 ))}
@@ -141,17 +157,21 @@ export default function BuySection() {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedToken(token.symbol)}
                       className={`relative rounded-xl p-4 border transition-all duration-200
-                        ${selectedToken === token.symbol
-                          ? 'border-accent-500 bg-accent-500/10' 
-                          : 'border-accent-500/20 hover:border-accent-500/40'}`}
+                        ${
+                          selectedToken === token.symbol
+                            ? "border-accent-500 bg-accent-500/10"
+                            : "border-accent-500/20 hover:border-accent-500/40"
+                        }`}
                     >
                       <div className="flex items-center justify-center space-x-2">
-                        <img 
-                          src={`${token.icon}`} 
-                          alt={token.symbol} 
-                          className="w-6 h-6" 
+                        <img
+                          src={`${token.icon}`}
+                          alt={token.symbol}
+                          className="w-6 h-6"
                         />
-                        <span className="text-text font-medium">{token.symbol}</span>
+                        <span className="text-text font-medium">
+                          {token.symbol}
+                        </span>
                       </div>
                     </motion.button>
                   ))}
@@ -199,17 +219,29 @@ export default function BuySection() {
                 whileTap={{ scale: 0.98 }}
                 className="w-full relative group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-accent-500 to-secondary-500 
-                  rounded-xl blur-sm opacity-70 group-hover:opacity-100 transition-opacity" />
-                <div className="relative bg-background-elevated border border-accent-500/20 
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-accent-500 to-secondary-500 
+                  rounded-xl blur-sm opacity-70 group-hover:opacity-100 transition-opacity"
+                />
+                <div
+                  className="relative bg-background-elevated border border-accent-500/20 
                   rounded-xl px-6 py-4 flex items-center justify-center space-x-2 
-                  group-hover:bg-transparent transition-colors">
+                  group-hover:bg-transparent transition-colors"
+                >
                   <WalletIcon className="w-5 h-5 text-accent-400" />
                   <span className="font-semibold text-text">
-                    Connect Wallet to Buy
+                    {isConnected ? (
+                      <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                        Buy
+                      </button>
+                    ) : (
+                      "Connect Wallet to Buy"
+                    )}
                   </span>
-                  <ArrowRightIcon className="w-4 h-4 text-accent-400 
-                    group-hover:translate-x-1 transition-transform" />
+                  <ArrowRightIcon
+                    className="w-4 h-4 text-accent-400 
+                    group-hover:translate-x-1 transition-transform"
+                  />
                 </div>
               </motion.button>
             </div>
@@ -218,9 +250,9 @@ export default function BuySection() {
               <div className="flex items-start space-x-3">
                 <InfoIcon className="w-5 h-5 text-accent-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-text-secondary">
-                  Tokens will be automatically sent to your wallet after the transaction 
-                  is confirmed. The exact amount may vary based on network fees and 
-                  token price at the time of purchase.
+                  Tokens will be automatically sent to your wallet after the
+                  transaction is confirmed. The exact amount may vary based on
+                  network fees and token price at the time of purchase.
                 </div>
               </div>
             </div>

@@ -1,15 +1,15 @@
-'use client';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  RocketIcon, 
-  LayersIcon, 
-  CpuIcon, 
+"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  RocketIcon,
+  LayersIcon,
+  CpuIcon,
   NetworkIcon, // Changed from Blockchain
-  PowerIcon, 
-  MenuIcon, 
-  XIcon, 
+  PowerIcon,
+  MenuIcon,
+  XIcon,
   ChevronRightIcon,
   WalletIcon,
   Power,
@@ -19,21 +19,20 @@ import {
   MailQuestion,
   Waypoints,
   Telescope,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
-import Image from 'next/image'
-
+import Image from "next/image";
 
 // Rainbow components imports
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const menuItems = [
-  { name: 'Buy', href: '#buy', icon: Gem },
-  { name: 'Vision', href: '#vision', icon: Telescope },
-  { name: 'Tokenomics', href: '#tokenomics', icon: LayersIcon },
-  { name: 'Roadmap', href: '#roadmap', icon: Waypoints },
-  { name: 'FAQ', href: '#faq', icon: MailQuestion },
+  { name: "Buy", href: "#buy", icon: Gem },
+  { name: "Vision", href: "#vision", icon: Telescope },
+  { name: "Tokenomics", href: "#tokenomics", icon: LayersIcon },
+  { name: "Roadmap", href: "#roadmap", icon: Waypoints },
+  { name: "FAQ", href: "#faq", icon: MailQuestion },
 ];
 
 export default function CyberNavbar() {
@@ -47,7 +46,7 @@ export default function CyberNavbar() {
       const offsetTop = element.offsetTop;
       window.scrollTo({
         top: offsetTop - 80, // Adjust for navbar height
-        behavior: 'smooth'
+        behavior: "smooth",
       });
       setIsOpen(false);
     }
@@ -55,8 +54,8 @@ export default function CyberNavbar() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -65,14 +64,15 @@ export default function CyberNavbar() {
       animate={{ opacity: 1, y: 0 }}
       className={`
         fixed top-0 w-full z-50 
-        ${scrolled 
-          ? 'bg-background-elevated/80 backdrop-blur-2xl border-b border-accent-500/10' 
-          : 'bg-transparent'
+        ${
+          scrolled
+            ? "bg-background-elevated/80 backdrop-blur-2xl border-b border-accent-500/10"
+            : "bg-transparent"
         }
       `}
     >
       {/* Cyber Line Decoration */}
-      <motion.div 
+      <motion.div
         className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-accent-500/50 to-transparent"
         animate={{
           opacity: [0.3, 0.6, 0.3],
@@ -80,38 +80,36 @@ export default function CyberNavbar() {
         transition={{
           duration: 2,
           repeat: Infinity,
-          ease: "linear"
+          ease: "linear",
         }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-         
-                <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center space-x-2"
-                >
-                  <Link href="/" className="flex items-center space-x-3">
-                    <motion.div
-                    transition={{
-                      duration: 20,
-                      repeat: Infinity,
-                      ease: "linear"
-                    }}
-                    className="relative" // Increased from w-10 h-10
-                    >
-                      <Image 
-                      src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg" 
-                      alt="SpringFi Logo"
-                      width={120}  // Increased from 100
-                      height={90}  // Increased from 40
-                      />
-                    </motion.div>
-                  
-                  </Link>
-                </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center space-x-2"
+          >
+            <Link href="/" className="flex items-center space-x-3">
+              <motion.div
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                className="relative" // Increased from w-10 h-10
+              >
+                <Image
+                  src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg"
+                  alt="SpringFi Logo"
+                  width={120} // Increased from 100
+                  height={90} // Increased from 40
+                />
+              </motion.div>
+            </Link>
+          </motion.div>
 
-                {/* Desktop Navigation */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             {menuItems.map((item) => (
               <motion.div
@@ -131,10 +129,12 @@ export default function CyberNavbar() {
                     whileHover={{ scale: 1.2 }}
                     transition={{ duration: 0.3 }}
                   />
-                  
+
                   <item.icon className="w-4 h-4 text-accent-400 group-hover:text-accent-300" />
-                  <span className="relative text-sm font-medium text-text-secondary 
-                    group-hover:text-text transition-colors duration-200">
+                  <span
+                    className="relative text-sm font-medium text-text-secondary 
+                    group-hover:text-text transition-colors duration-200"
+                  >
                     {item.name}
                   </span>
                 </Link>
@@ -156,10 +156,10 @@ export default function CyberNavbar() {
                 transition={{
                   duration: 2,
                   repeat: Infinity,
-                  ease: "linear"
+                  ease: "linear",
                 }}
               />
-              
+
               <motion.div
                 className="absolute inset-[1px] rounded-[10px] bg-background-elevated"
                 whileHover={{ opacity: 0.9 }}
@@ -168,7 +168,7 @@ export default function CyberNavbar() {
               <motion.div className="relative flex items-center space-x-2">
                 <Wallet className="w-4 h-4 text-accent-400" />
                 <span className="text-sm font-medium text-text">
-                 <ConnectButton/>
+                  <ConnectButton/> 
                 </span>
                 <ChevronRightIcon className="w-4 h-4 text-accent-400 group-hover:translate-x-1 transition-transform" />
               </motion.div>
@@ -211,7 +211,7 @@ export default function CyberNavbar() {
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-background-elevated/95 backdrop-blur-xl"
           >
@@ -230,14 +230,16 @@ export default function CyberNavbar() {
                       hover:bg-secondary-600/10 group"
                   >
                     <item.icon className="w-5 h-5 text-accent-400" />
-                    <span className="text-text-secondary group-hover:text-text
-                      transition-colors duration-200">
+                    <span
+                      className="text-text-secondary group-hover:text-text
+                      transition-colors duration-200"
+                    >
                       {item.name}
                     </span>
                   </Link>
                 </motion.div>
               ))}
-              
+
               <motion.button
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
