@@ -41,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-[#0D0D0D] text-white`}>
-        <Navbar />
+       
         <main className="min-h-screen pt-16 max-w-[1440px] mx-auto px-4 md:px-6">
           {children}
         </main>
