@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -33,19 +34,63 @@ export const metadata: Metadata = {
   },
 }
 
+// Rainbow imports
+import '@rainbow-me/rainbowkit/styles.css';
+import {
+  getDefaultConfig,
+  RainbowKitProvider,
+} from '@rainbow-me/rainbowkit';
+import { WagmiProvider } from 'wagmi';
+import {
+  mainnet,
+  polygon,
+  optimism,
+  arbitrum,
+  base,
+  bsc,
+} from 'wagmi/chains';
+import {
+  QueryClientProvider,
+  QueryClient,
+} from "@tanstack/react-query";
+
+
+// import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+const config = getDefaultConfig({
+  appName: 'My RainbowKit App',
+  projectId: 'YOUR_PROJECT_ID',
+  chains: [mainnet, bsc, polygon],
+  ssr: false,// true, // If your dApp uses server side rendering (SSR)
+});
+
+const queryClient = new QueryClient();
+
+
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-[#0D0D0D] text-white`}>
+   
+        <html lang="en" suppressHydrationWarning>
+           <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+        <body className={`${inter.className} bg-[#0D0D0D] text-white`}>
         <Navbar />
         <main className="min-h-screen pt-16 max-w-[1440px] mx-auto px-4 md:px-6">
           {children}
         </main>
-      </body>
-    </html>
+        </body>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+       
+        </html>
+       
+   
   )
 }
+

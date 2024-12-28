@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   Wallet, 
-  CaretLeft,
+  CaretLeft, 
   CheckCircle,
   WarningCircle,
   CaretRight,

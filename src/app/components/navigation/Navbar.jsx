@@ -24,6 +24,10 @@ import {
 
 import Image from 'next/image'
 
+
+// Rainbow components imports
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+
 const menuItems = [
   { name: 'Buy', href: '#buy', icon: Gem },
   { name: 'Vision', href: '#vision', icon: Telescope },
@@ -164,7 +168,7 @@ export default function CyberNavbar() {
               <motion.div className="relative flex items-center space-x-2">
                 <Wallet className="w-4 h-4 text-accent-400" />
                 <span className="text-sm font-medium text-text">
-                  Connect Wallet
+                 <ConnectButton/>
                 </span>
                 <ChevronRightIcon className="w-4 h-4 text-accent-400 group-hover:translate-x-1 transition-transform" />
               </motion.div>

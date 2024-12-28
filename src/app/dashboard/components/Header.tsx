@@ -12,6 +12,9 @@ import {
   Shield
 } from 'lucide-react';
 
+// Rainbow components imports
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+
 declare global {
   interface Window {
     ethereum?: {
@@ -119,109 +122,8 @@ export function Header() {
             </motion.div>
 
             {/* Wallet Section */}
-            <div className="relative">
-              {isWalletConnected ? (
-                <>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="px-4 py-2 rounded-lg flex items-center space-x-2 
-                      bg-accent/10 text-accent border border-accent/20 
-                      hover:bg-accent/20 transition-all"
-                  >
-                    <Shield className="w-4 h-4" />
-                    <span>
-                      {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 
-                      ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                  </motion.button>
-
-                  <AnimatePresence>
-                    {isDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute right-0 mt-2 w-72 rounded-xl bg-card 
-                          border border-border/50 shadow-lg overflow-hidden"
-                      >
-                        <div className="p-4 space-y-4">
-                          {/* Wallet Info */}
-                          <div className="space-y-2">
-                            <div className="text-sm text-muted-foreground">
-                              Connected Wallet
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">
-                                {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
-                              </span>
-                              <div className="flex items-center space-x-2">
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={copyAddress}
-                                  className="p-2 rounded-lg hover:bg-accent/10 
-                                    text-accent transition-colors"
-                                >
-                                  {copySuccess ? (
-                                    <motion.span
-                                      initial={{ scale: 0 }}
-                                      animate={{ scale: 1 }}
-                                      className="text-green-500"
-                                    >
-                                      ✓
-                                    </motion.span>
-                                  ) : (
-                                    <Copy className="w-4 h-4" />
-                                  )}
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={viewOnEtherscan}
-                                  className="p-2 rounded-lg hover:bg-accent/10 
-                                    text-accent transition-colors"
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </motion.button>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="h-[1px] bg-border/50" />
-
-                          {/* Disconnect Button */}
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={disconnectWallet}
-                            className="w-full px-4 py-2 rounded-lg flex items-center 
-                              justify-center space-x-2 bg-red-500/10 text-red-500 
-                              hover:bg-red-500/20 transition-colors"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            <span>Disconnect</span>
-                          </motion.button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </>
-              ) : (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={connectWallet}
-                  className="px-6 py-2 rounded-lg flex items-center space-x-2 
-                    bg-accent text-white hover:bg-accent/90 transition-colors"
-                >
-                  <Wallet className="w-4 h-4" />
-                  <span>Connect Wallet</span>
-                </motion.button>
-              )}
-            </div>
+       
+            <ConnectButton/>
           </div>
         </div>
       </div>
@@ -231,3 +133,113 @@ export function Header() {
     </header>
   );
 }
+
+
+//wallet 
+ /*<div className="relative">
+{isWalletConnected ? (
+  <>
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+      className="px-4 py-2 rounded-lg flex items-center space-x-2 
+        bg-accent/10 text-accent border border-accent/20 
+        hover:bg-accent/20 transition-all"
+    >
+      <Shield className="w-4 h-4" />
+      <span>
+        {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+      </span>
+      <ChevronDown className={`w-4 h-4 transition-transform duration-200 
+        ${isDropdownOpen ? 'rotate-180' : ''}`} />
+    </motion.button>
+
+    <AnimatePresence>
+      {isDropdownOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          className="absolute right-0 mt-2 w-72 rounded-xl bg-card 
+            border border-border/50 shadow-lg overflow-hidden"
+        >
+          <div className="p-4 space-y-4">
+            {/* Wallet Info */}
+         /*   <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+               {/** Connected Wallets */} /*
+              < ConnectButton/>
+
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+                </span>
+                <div className="flex items-center space-x-2">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={copyAddress}
+                    className="p-2 rounded-lg hover:bg-accent/10 
+                      text-accent transition-colors"
+                  >
+                    {copySuccess ? (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="text-green-500"
+                      >
+                        ✓
+                      </motion.span>
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={viewOnEtherscan}
+                    className="p-2 rounded-lg hover:bg-accent/10 
+                      text-accent transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-[1px] bg-border/50" />
+
+            {/* Disconnect Button */} /*
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={disconnectWallet}
+              className="w-full px-4 py-2 rounded-lg flex items-center 
+                justify-center space-x-2 bg-red-500/10 text-red-500 
+                hover:bg-red-500/20 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Disconnect</span>
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </>
+) : (
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={connectWallet}
+    className="px-6 py-2 rounded-lg flex items-center space-x-2 
+      bg-accent text-white hover:bg-accent/90 transition-colors"
+  >
+    <Wallet className="w-4 h-4" />
+    <span>{/*Connect Wallet*/} /*
+    < ConnectButton/>
+    </span>
+  </motion.button>
+)}
+</div>  */
