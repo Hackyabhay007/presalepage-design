@@ -6,6 +6,7 @@ import {
   ArrowRightIcon, 
   InfoIcon
 } from 'lucide-react';
+import { PaymentSuccessModal } from './PaymentSuccessModal';
 
 // Network configurations
 const networks = {
@@ -70,7 +71,22 @@ export default function BuySection() {
   const [selectedToken, setSelectedToken] = useState(networks.eth.tokens[0].symbol);
   const [amount, setAmount] = useState('');
   const [tokenAmount, setTokenAmount] = useState('0');
-  
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+const [transactionData, setTransactionData] = useState({
+  hash: '',      // Default hash value
+  amount: 0,     // Default amount
+  symbol: '',    // Default symbol
+});
+
+  const handlePurchaseSuccess = (data) => {
+    setTransactionData({
+      hash: data.transactionHash,
+      amount: data.tokenAmount,
+      symbol: data.tokenSymbol
+    });
+    setShowSuccessModal(true);
+  };
+
   const calculateTokens = (value) => {
     // Example rate: 1 ETH = 50000 tokens
     const rates = {
@@ -227,6 +243,13 @@ export default function BuySection() {
           </div>
         </motion.div>
       </div>
+      <PaymentSuccessModal
+              isOpen={showSuccessModal}
+              onClose={() => setShowSuccessModal(false)}
+              transactionHash={transactionData.hash}
+              tokenAmount={transactionData.amount}
+              tokenSymbol={transactionData.symbol}
+            />
     </div>
   );
 }
