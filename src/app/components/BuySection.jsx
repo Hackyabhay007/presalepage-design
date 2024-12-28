@@ -2,10 +2,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { WalletIcon, ArrowRightIcon, InfoIcon } from "lucide-react";
+import { wagmigotchiABI } from "@/ABI/contractABI";
 
 // Rainbow components imports
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
+import {
+  useContractRead,
+  useContractWrite,
+  usePrepareContractWrite,
+} from "wagmi";
+import { parseEther } from "viem";
 
 // Network configurations
 const networks = {
@@ -73,6 +79,8 @@ export default function BuySection() {
   const [amount, setAmount] = useState("");
   const [tokenAmount, setTokenAmount] = useState("0");
 
+  console.log(selectedNetwork, selectedToken, amount, tokenAmount);
+
   const calculateTokens = (value) => {
     // Example rate: 1 ETH = 50000 tokens
     const rates = {
@@ -87,6 +95,61 @@ export default function BuySection() {
   };
 
   const { isConnected } = useAccount();
+
+  //write contract
+  // Naive payment
+  const { config: NaivepaymentConfig } = usePrepareContractWrite({
+    address: "0x028356D1796dF23eE228F4C8f0adF0A447A3E045", //  contract address
+    abi: wagmigotchiABI,
+    functionName: "BuyWithNative",
+    args: [],
+    value: parseEther(amount),
+  });
+  const {
+    data: NaivepaymentData,
+    isLoading: isNaivepaymentData,
+    isSuccess: USDTNaivepaymentDataSuccess,
+    write: Naivepayment,
+  } = useContractWrite(NaivepaymentConfig);
+
+  const handleNaive = async () => {
+    try {
+      Naivepayment?.();
+    } catch (error) {
+      console.error("Mint error:", error);
+    }
+  };
+  //USDT payment
+  const { config: USDTPAYMENTConfig } = usePrepareContractWrite({
+    address: "0x028356D1796dF23eE228F4C8f0adF0A447A3E045", //  contract address
+    abi: wagmigotchiABI,
+    functionName: "BuyWithUSDT",
+    args: [amount],
+    // value: parseEther("0.01"),
+  });
+  const {
+    data: USDTPAYMENTData,
+    isLoading: isUSDTPAYMENTData,
+    isSuccess: USDTPAYMENTDataSuccess,
+    write: USDTPAYMENT,
+  } = useContractWrite(USDTPAYMENTConfig);
+  const handleUSDT = async () => {
+    try {
+      USDTPAYMENT?.();
+    } catch (error) {
+      console.error("Mint error:", error);
+    }
+  };
+
+  //Read contract
+
+  const handleselectTokenPayment = () => {
+    if (selectedToken === "USDT") {
+      handleUSDT();
+    } else {
+      handleNaive();
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-background py-20">
@@ -231,7 +294,10 @@ export default function BuySection() {
                   <WalletIcon className="w-5 h-5 text-accent-400" />
                   <span className="font-semibold text-text">
                     {isConnected ? (
-                      <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                      <button
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                        onClick={handleselectTokenPayment}
+                      >
                         Buy
                       </button>
                     ) : (

@@ -23,7 +23,7 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.0",
-    "viem": "2.x",
+    "viem": "^2.21.57",
     "wagmi": "^2.14.6"
   },
   "devDependencies": {
