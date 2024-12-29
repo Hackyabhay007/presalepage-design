@@ -383,7 +383,7 @@ const BuySection = () => {
     if (!amount) return
     try {
       const tx = await nativepayment({
-        address: "0xF4187144b589e31853471683AC676616101835Fb",
+        address: "0xC414436B424318808069A9ec5B65C52A7523c743",
         abi: abi,
         functionName: 'BuyWithNative',
         value: parseEther(amount),
@@ -411,7 +411,7 @@ const BuySection = () => {
     if (!amount) return
     try {
       const tx = await USDTPAYMENT({
-        address: '0xF4187144b589e31853471683AC676616101835Fb',
+        address: '0xC414436B424318808069A9ec5B65C52A7523c743',
         abi: abi,
         functionName: 'BuyWithUSDT',
         args: [amount],
@@ -442,7 +442,7 @@ const BuySection = () => {
     try {
       console.log("Starting USDT approval...");
       const usdtAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // Mainnet USDT address
-      const spenderAddress = "0xF4187144b589e31853471683AC676616101835Fb"; // Your contract address
+      const spenderAddress = "0xC414436B424318808069A9ec5B65C52A7523c743"; // Your contract address
       const maxApproval = "115792089237316195423570985008687907853269984665640564039457584007913129639935"; // Max uint256
 
       const tx = await approveUSDT({
