@@ -45,6 +45,7 @@ interface Token {
   id: string;
   symbol: string;
   name: string;
+  coingeckoId: string;
   price: number;
   icon: string;
   decimals: number;
@@ -90,7 +91,8 @@ const networkTokens: { [key: string]: Token[] } = {
       id: 'eth',
       symbol: "ETH",
       name: "Sepolia ETH",
-      price: 2000,
+      coingeckoId: "ethereum",
+      price: 0,
       icon: 'https://cryptologos.cc/logos/ethereum-eth-logo.svg',
       decimals: 18,
       minAmount: 0.01,
@@ -100,6 +102,7 @@ const networkTokens: { [key: string]: Token[] } = {
       id: 'usdt',
       symbol: "USDT",
       name: "Tether USD",
+      coingeckoId: "tether",
       price: 1,
       icon: 'https://cryptologos.cc/logos/tether-usdt-logo.svg',
       decimals: 6,
@@ -112,7 +115,8 @@ const networkTokens: { [key: string]: Token[] } = {
       id: 'bnb',
       symbol: "BNB",
       name: "BNB",
-      price: 300,
+      coingeckoId: "binancecoin",
+      price: 0,
       icon: 'https://cryptologos.cc/logos/bnb-bnb-logo.svg',
       decimals: 18,
       minAmount: 0.1,
@@ -122,6 +126,7 @@ const networkTokens: { [key: string]: Token[] } = {
       id: 'usdt',
       symbol: "USDT",
       name: "Tether USD",
+      coingeckoId: "tether",
       price: 1,
       icon: 'https://cryptologos.cc/logos/tether-usdt-logo.svg',
       decimals: 18,
@@ -134,7 +139,8 @@ const networkTokens: { [key: string]: Token[] } = {
       id: 'matic',
       symbol: "MATIC",
       name: "Polygon",
-      price: 1,
+      coingeckoId: "matic-network",
+      price: 0,
       icon: 'https://cryptologos.cc/logos/polygon-matic-logo.svg',
       decimals: 18,
       minAmount: 10,
@@ -144,6 +150,7 @@ const networkTokens: { [key: string]: Token[] } = {
       id: 'usdt',
       symbol: "USDT",
       name: "Tether USD",
+      coingeckoId: "tether",
       price: 1,
       icon: 'https://cryptologos.cc/logos/tether-usdt-logo.svg',
       decimals: 6,
@@ -191,6 +198,7 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [estimatedGas, setEstimatedGas] = useState<number | null>(null);
   const [isApproved, setIsApproved] = useState(false);
+  const [prices, setPrices] = useState<{ [key: string]: number }>({});
 
   const { isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
@@ -685,6 +693,40 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
       </div>
     );
   };
+
+  // Fetch prices from CoinGecko
+  const fetchPrices = async () => {
+    try {
+      const response = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,binancecoin,matic-network&vs_currencies=usd'
+      );
+      const data = await response.json();
+      
+      setPrices({
+        ethereum: data.ethereum?.usd || 0,
+        binancecoin: data.binancecoin?.usd || 0,
+        'matic-network': data['matic-network']?.usd || 0
+      });
+
+      // Update token prices
+      Object.keys(networkTokens).forEach(networkId => {
+        networkTokens[networkId].forEach(token => {
+          if (token.coingeckoId && token.coingeckoId !== 'tether') {
+            token.price = data[token.coingeckoId]?.usd || token.price;
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Error fetching prices:', error);
+    }
+  };
+
+  // Fetch prices on component mount and every 30 seconds
+  useEffect(() => {
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <AnimatePresence>

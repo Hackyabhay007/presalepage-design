@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { WalletIcon, ArrowRightIcon, InfoIcon } from "lucide-react";
 import { PaymentSuccessModal } from './PaymentSuccessModal';
@@ -266,6 +266,8 @@ const networks = {
         decimals: 18,
         minAmount: 0.01,
         maxAmount: 10,
+        coingeckoId: "ethereum",
+        price: 0
       },
       {
         id: "usdt",
@@ -274,6 +276,8 @@ const networks = {
         decimals: 6,
         minAmount: 10,
         maxAmount: 20000,
+        coingeckoId: "tether",
+        price: 1
       },
     ],
     chainId: 11155111,
@@ -292,6 +296,8 @@ const networks = {
         decimals: 18,
         minAmount: 0.1,
         maxAmount: 100,
+        coingeckoId: "binancecoin",
+        price: 0
       },
       {
         id: "usdt",
@@ -300,6 +306,8 @@ const networks = {
         decimals: 18,
         minAmount: 10,
         maxAmount: 20000,
+        coingeckoId: "tether",
+        price: 1
       },
     ],
     chainId: 56,
@@ -318,6 +326,8 @@ const networks = {
         decimals: 18,
         minAmount: 10,
         maxAmount: 10000,
+        coingeckoId: "matic-network",
+        price: 0
       },
       {
         id: "usdt",
@@ -326,6 +336,8 @@ const networks = {
         decimals: 6,
         minAmount: 10,
         maxAmount: 20000,
+        coingeckoId: "tether",
+        price: 1
       },
     ],
     chainId: 137,
@@ -335,12 +347,12 @@ const networks = {
 };
 
 const BuySection = () => {
-  const [selectedNetwork, setSelectedNetwork] = useState('eth');
-  const [selectedToken, setSelectedToken] = useState(
-    networks.eth.tokens[0].symbol
-  );
+  const [selectedNetwork, setSelectedNetwork] = useState("eth");
+  const [selectedToken, setSelectedToken] = useState(networks.eth.tokens[0].symbol);
   const [amount, setAmount] = useState("");
   const [tokenAmount, setTokenAmount] = useState("0");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [prices, setPrices] = useState({});
 
   console.log(selectedNetwork, selectedToken, amount, tokenAmount);
 
@@ -532,6 +544,40 @@ const BuySection = () => {
   const handleNetworkChange = async (networkId) => {
     await switchNetwork(networkId);
   };
+
+  // Fetch prices from CoinGecko
+  const fetchPrices = async () => {
+    try {
+      const response = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,binancecoin,matic-network&vs_currencies=usd'
+      );
+      const data = await response.json();
+      
+      setPrices({
+        ethereum: data.ethereum?.usd || 0,
+        binancecoin: data.binancecoin?.usd || 0,
+        'matic-network': data['matic-network']?.usd || 0
+      });
+
+      // Update token prices in networks object
+      Object.keys(networks).forEach(networkId => {
+        networks[networkId].tokens.forEach(token => {
+          if (token.coingeckoId && token.coingeckoId !== 'tether') {
+            token.price = data[token.coingeckoId]?.usd || token.price;
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Error fetching prices:', error);
+    }
+  };
+
+  // Fetch prices on component mount and every 30 seconds
+  useEffect(() => {
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-background py-20">
