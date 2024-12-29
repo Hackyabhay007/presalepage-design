@@ -15,7 +15,7 @@ import {
   Shield,
   Percent
 } from 'lucide-react';
-import { BuyTokenModal } from './BuyTokenModal';
+import BuyTokenModal from './BuyTokenModal';
 
 const networks = [
   { id: 'eth', name: 'Ethereum', icon: '/eth.svg', color: 'blue' },

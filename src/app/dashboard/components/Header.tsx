@@ -49,7 +49,7 @@ export function Header() {
         }
       };
     }
-  }, []);
+  }, []); 
 
   const connectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { Header } from './components/Header';
 import { TokenDashboard } from './components/TokenDashboard';
+import { Providers } from '../providers';
 
-export const metadata: Metadata = {
+/* export const metadata: Metadata = {
   title: 'SpringFi | Next-Generation DeFi Ecosystem',
   description: 'Experience the future of DeFi with SpringFi. Trade, stake, and earn rewards in a secure and innovative blockchain ecosystem.',
   keywords: 'SpringFi, DeFi platform, cryptocurrency trading, staking rewards, blockchain technology, crypto investment',
@@ -39,13 +40,19 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-};
+}; */
+
+//rainbowkit imports
+
+import "@rainbow-me/rainbowkit/styles.css";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
-      <Header />
-      <TokenDashboard />
+      <Providers>
+        <Header />
+        <TokenDashboard /> 
+      </Providers>
     </main>
   );
 }

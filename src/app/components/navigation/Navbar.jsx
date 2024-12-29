@@ -35,6 +35,20 @@ const menuItems = [
 export default function CyberNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+
+  const connectWallet = async () => {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        setWalletAddress(accounts[0]);
+        setIsWalletConnected(true);
+      } catch (error) {
+        console.error('Error connecting wallet:', error);
+      }
+    }
+  };
 
   const scrollToSection = (e, href) => {
     e.preventDefault();
@@ -108,67 +122,25 @@ export default function CyberNavbar() {
                 </motion.div>
 
                 {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex md:items-center md:space-x-6">
             {menuItems.map((item) => (
-              <motion.div
+              <a
                 key={item.name}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                href={item.href}
+                onClick={(e) => scrollToSection(e, item.href)}
+                className="text-gray-300 hover:text-accent-400 px-3 py-2 text-sm font-medium flex items-center space-x-2 transition-colors"
               >
-                <Link
-                  href={item.href}
-                  className="group relative px-4 py-2 rounded-xl flex items-center space-x-2"
-                >
-                  {/* Background Glow */}
-                  <motion.div
-                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100
-                    bg-gradient-to-r from-secondary-600/20 to-accent-600/20 blur-sm"
-                    initial={false}
-                    whileHover={{ scale: 1.2 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  <item.icon className="w-4 h-4 text-accent-400 group-hover:text-accent-300" />
-                  <span className="relative text-sm font-medium text-text-secondary 
-                    group-hover:text-text transition-colors duration-200">
-                    {item.name}
-                  </span>
-                </Link>
-              </motion.div>
+                <item.icon className="w-4 h-4" />
+                <span>{item.name}</span>
+              </a>
             ))}
-
-            {/* Connect Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative ml-4 px-6 py-2.5 rounded-xl overflow-hidden group"
+            <button
+              onClick={connectWallet}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white transition-colors"
             >
-              {/* Button Glow Background */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-secondary-600 to-accent-600"
-                animate={{
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
-              
-              <motion.div
-                className="absolute inset-[1px] rounded-[10px] bg-background-elevated"
-                whileHover={{ opacity: 0.9 }}
-              />
-
-              <motion.div className="relative flex items-center space-x-2">
-                <Wallet className="w-4 h-4 text-accent-400" />
-                <span className="text-sm font-medium text-text">
-                  Connect Wallet
-                </span>
-                <ChevronRightIcon className="w-4 h-4 text-accent-400 group-hover:translate-x-1 transition-transform" />
-              </motion.div>
-            </motion.button>
+              <Wallet className="w-4 h-4" />
+              <span>{isWalletConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}</span>
+            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -235,7 +207,7 @@ export default function CyberNavbar() {
               ))}
               
               <motion.button
-                initial={{ y: 20, opacity: 0 }}
+                initial={{ y: 20, opacity: 0 }} 
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 20, opacity: 0 }}
                 className="w-full px-4 py-3 mt-4 rounded-xl
@@ -244,7 +216,7 @@ export default function CyberNavbar() {
                   border border-accent-400/20 flex items-center justify-center space-x-2"
               >
                 <Wallet className="w-4 h-4 text-accent-400" />
-                <span className="text-accent-400">Connect Wallet</span>
+                <span className="text-accent-400">{isWalletConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}</span>
               </motion.button>
             </div>
           </motion.div>
