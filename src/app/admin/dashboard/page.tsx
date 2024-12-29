@@ -1,126 +1,148 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  TrendingUp,  
-  Users, 
-  DollarSign, 
+import {
+  DollarSign,
+  Users,
+  TrendingUp,
   ArrowUp,
   ArrowDown,
   Activity
 } from 'lucide-react';
+import { RecentActivity } from '../components/RecentActivity';
 
-const StatsCard = ({ title, value, change, trend, icon: Icon }: any) => (
+interface StatsCardProps {
+  title: string;
+  value: string | number;
+  change?: string;
+  trend?: 'up' | 'down';
+  icon: React.ElementType;
+  isLoading?: boolean;
+}
+
+const StatsCard = ({ title, value, change, trend, icon: Icon, isLoading }: StatsCardProps) => (
   <motion.div
-    whileHover={{ y: -4 }}
-    className="p-6 bg-card border border-border/50 rounded-xl"
+    whileHover={{ scale: 1.02 }}
+    className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6"
   >
-    <div className="flex justify-between items-start">
-      <div>
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <h3 className="text-2xl font-bold mt-2">{value}</h3>
-      </div>
-      <div className="p-2 bg-accent/10 rounded-lg">
-        <Icon className="w-5 h-5 text-accent" />
-      </div>
+    <div className="flex justify-between items-start mb-4">
+      <span className="text-sm text-muted-foreground">{title}</span>
+      <Icon className="w-4 h-4 text-accent" />
     </div>
-    <div className="mt-4 flex items-center">
-      {trend === 'up' ? (
-        <ArrowUp className="w-4 h-4 text-green-500" />
-      ) : (
-        <ArrowDown className="w-4 h-4 text-red-500" />
-      )}
-      <span className={`ml-1 text-sm ${
-        trend === 'up' ? 'text-green-500' : 'text-red-500'
-      }`}>
-        {change}
-      </span>
-    </div>
+    {isLoading ? (
+      <div className="h-7 bg-accent/10 rounded animate-pulse" />
+    ) : (
+      <>
+        <p className="text-2xl font-bold mb-2">{value}</p>
+        {change && (
+          <div className={`flex items-center text-sm ${
+            trend === 'up' ? 'text-green-500' : 'text-red-500'
+          }`}>
+            {trend === 'up' ? (
+              <ArrowUp className="w-4 h-4 mr-1" />
+            ) : (
+              <ArrowDown className="w-4 h-4 mr-1" />
+            )}
+            {change}
+          </div>
+        )}
+      </>
+    )}
   </motion.div>
 );
 
-export default function DashboardPage() {
-  const router = useRouter();
+interface AdminStats {
+  totalSalesUSD: number;
+  activeUsers: number;
+  conversionRate: number;
+  netRevenue: number;
+}
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminSession');
-    if (!auth) {
-      router.push('/admin/login');
-    }
-  }, [router]);
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/admin/stats');
+        if (!response.ok) {
+          throw new Error('Failed to fetch stats');
+        }
+        const data = await response.json();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching admin stats:', error);
+        // Set default values on error
+        setStats({
+          totalSalesUSD: 0,
+          activeUsers: 0,
+          conversionRate: 0,
+          netRevenue: 0
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+    // Refresh stats every minute
+    const interval = setInterval(fetchStats, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatCurrency = (value: number) => {
+    return `$${value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Total Sales"
-          value="$123,456"
-          change="+12.3%"
-          trend="up"
-          icon={DollarSign}
-        />
-        <StatsCard
-          title="Active Users"
-          value="1,234"
-          change="+5.6%"
-          trend="up"
-          icon={Users}
-        />
-        <StatsCard
-          title="Conversion Rate"
-          value="2.34%"
-          change="-1.2%"
-          trend="down"
-          icon={Activity}
-        />
-        <StatsCard
-          title="Net Revenue"
-          value="$45,678"
-          change="+8.7%"
-          trend="up"
-          icon={TrendingUp}
-        />
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground">Monitor token sales and user activity</p>
       </div>
 
-      {/* Recent Activity */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-        <div className="bg-card border border-border/50 rounded-xl p-6">
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="flex items-center justify-between p-4 bg-background/50 
-                  rounded-lg hover:bg-accent/5 transition-colors"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-accent/10 rounded-full flex 
-                    items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-accent" />
-                  </div>
-                  <div>
-                    <p className="font-medium">New Transaction</p>
-                    <p className="text-sm text-muted-foreground">
-                      User purchased tokens
-                    </p>
-                  </div>
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  2 minutes ago
-                </span>
-              </motion.div>
-            ))}
-          </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="space-y-6"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatsCard
+            title="Total Sales"
+            value={isLoading ? "" : formatCurrency(stats?.totalSalesUSD || 0)}
+            icon={DollarSign}
+            isLoading={isLoading}
+          />
+          <StatsCard
+            title="Active Users"
+            value={isLoading ? "" : (stats?.activeUsers || 0).toLocaleString()}
+            icon={Users}
+            isLoading={isLoading}
+          />
+          <StatsCard
+            title="Conversion Rate"
+            value={isLoading ? "" : `${(stats?.conversionRate || 0).toFixed(2)}%`}
+            icon={Activity}
+            isLoading={isLoading}
+          />
+          <StatsCard
+            title="Net Revenue"
+            value={isLoading ? "" : formatCurrency(stats?.netRevenue || 0)}
+            icon={TrendingUp}
+            isLoading={isLoading}
+          />
         </div>
-      </div>
-    </motion.div>
+
+        <div className="mt-8">
+          <RecentActivity />
+        </div>
+      </motion.div>
+    </div>
   );
 }

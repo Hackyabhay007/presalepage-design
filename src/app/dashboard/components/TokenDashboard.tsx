@@ -1,6 +1,6 @@
 // components/TokenDashboard.tsx
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Coins, 
@@ -13,9 +13,23 @@ import {
   DollarSign,
   BarChart3,
   Shield,
-  Percent
+  Percent,
+  History
 } from 'lucide-react';
 import BuyTokenModal from './BuyTokenModal';
+import { TransactionHistory } from './TransactionHistory';
+import { useAccount } from 'wagmi';
+
+interface Transaction {
+  id: string;
+  type: 'buy' | 'transfer';
+  tokenSymbol: string;
+  amount: number;
+  price: number;
+  timestamp: string;
+  status: 'completed' | 'pending' | 'failed';
+  network: string;
+}
 
 const networks = [
   { id: 'eth', name: 'Ethereum', icon: '/eth.svg', color: 'blue' },
@@ -44,43 +58,57 @@ export function TokenDashboard() {
   const [selectedToken, setSelectedToken] = useState(null);
   const [purchaseStep, setPurchaseStep] = useState(1);
   const [purchaseAmount, setPurchaseAmount] = useState('');
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(false); 
+  const [portfolioData, setPortfolioData] = useState({
+    totalValue: 0,
+    totalTokenAmount: 0,
+    volume24h: 0,
+    totalProfit: 0
+  });
+  const { address } = useAccount();
 
-  const holdings = [
-    {
-      id: 1,
-      name: 'SPRINGFI Token',
-      symbol: 'NXS',
-      purchasedAmount: 50000,
-      purchasePrice: 0.00001,
-      currentPrice: 0.000018,
-      network: 'Ethereum',
-      status: 'active',
-      lastUpdate: '2 mins ago',
-      volume24h: '1.2M',
-      marketCap: '25M',
-      circulatingSupply: '100M',
-      totalSupply: '1B',
-      allTimeHigh: 0.00002,
-      allTimeLow: 0.000008
-    },
-    {
-      id: 2,
-      name: 'VERTEX Token',
-      symbol: 'VTX',
-      purchasedAmount: 75000,
-      purchasePrice: 0.00002,
-      currentPrice: 0.000019,
-      network: 'BSC',
-      status: 'active',
-      lastUpdate: '5 mins ago',
-      volume24h: '2.5M',
-      marketCap: '45M',
-      circulatingSupply: '250M',
-      totalSupply: '1B',
-      allTimeHigh: 0.00003,
-      allTimeLow: 0.000015
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!address) {
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        
+        // Fetch transactions
+        const txResponse = await fetch(`/api/transactions?address=${address}`);
+        if (!txResponse.ok) {
+          throw new Error('Failed to fetch transactions');
+        }
+        const txData = await txResponse.json();
+        setTransactions(txData);
+
+        // Fetch portfolio data
+        const portfolioResponse = await fetch(`/api/portfolio?address=${address}`);
+        if (!portfolioResponse.ok) {
+          throw new Error('Failed to fetch portfolio data');
+        }
+        const portfolioData = await portfolioResponse.json();
+        setPortfolioData(portfolioData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setTransactions([]);
+        setPortfolioData({
+          totalValue: 0,
+          totalTokenAmount: 0,
+          volume24h: 0,
+          totalProfit: 0
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [address]);
 
   interface StatsCardProps {
     title: string;
@@ -133,148 +161,64 @@ export function TokenDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard 
             title="Total Value" 
-            value="$12,450.00" 
+            value={isLoading ? "Loading..." : `$${portfolioData.totalValue.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}`}
             icon={DollarSign}
-            trend={12.5} 
+            trend={isLoading ? null : 12.5} 
           />
           <StatsCard 
             title="Active Tokens" 
-            value="4" 
+            value={isLoading ? "Loading..." : portfolioData.totalTokenAmount.toLocaleString()} 
             icon={Coins} 
           />
           <StatsCard 
             title="24h Volume" 
-            value="$3.7M" 
+            value={isLoading ? "Loading..." : `$${(portfolioData.volume24h / 1000000).toFixed(1)}M`}
             icon={Activity}
-            trend={-5.2} 
+            trend={isLoading ? null : -5.2} 
           />
           <StatsCard 
             title="Total Profit" 
-            value="$1,250.00" 
+            value={isLoading ? "Loading..." : `$${portfolioData.totalProfit.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}`}
             icon={TrendingUp}
-            trend={8.7} 
+            trend={isLoading ? null : (portfolioData.totalProfit > 0 ? 8.7 : -8.7)} 
           />
         </div>
       </section>
 
-      {/* Holdings Section */}
-      <section className="space-y-6">
-        <h3 className="text-xl font-semibold">Token Holdings</h3>
-        
-        {holdings.map((token) => (
-          <motion.div
-            key={token.id}
-            whileHover={{ scale: 1.01 }}
-            className="bg-card/50 backdrop-blur-sm border border-border/50 
-              rounded-xl p-6 hover:border-accent/50 transition-all"
-          >
-            {/* Token Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-              <div className="flex items-center space-x-4 mb-4 md:mb-0">
-                <div className="w-12 h-12 rounded-full bg-accent/10 
-                  flex items-center justify-center">
-                  <Coins className="w-6 h-6 text-accent" />
-                </div>
-                <div>
-                  <h4 className="font-semibold">{token.name}</h4>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">
-                      {token.symbol}
-                    </span>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-sm text-muted-foreground">
-                      {token.network}
-                    </span>
-                  </div>
-                </div>
+      {/* Transaction History Section */}
+      <section className="mt-12">
+        {isLoading && address ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+          </div>
+        ) : transactions.length > 0 ? (
+          <TransactionHistory transactions={transactions} />
+        ) : (
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-8">
+            <div className="flex flex-col items-center justify-center text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+                <Coins className="w-6 h-6 text-accent" />
               </div>
-
-              <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <div className="text-sm text-muted-foreground">Current Price</div>
-                  <div className="font-semibold">${token.currentPrice}</div>
-                </div>
-                <div className={`px-3 py-1 rounded-full text-sm font-medium
-                  ${token.currentPrice > token.purchasePrice 
-                    ? 'bg-green-500/10 text-green-500' 
-                    : 'bg-red-500/10 text-red-500'}`}>
-                  {((token.currentPrice - token.purchasePrice) / 
-                    token.purchasePrice * 100).toFixed(2)}%
-                </div>
-              </div>
+              <h3 className="text-lg font-semibold">Welcome to SpringFi!</h3>
+              <p className="text-muted-foreground max-w-sm">
+                Start your journey by buying SpringFi tokens. Once you make your first purchase, your transaction history will appear here.
+              </p>
+              <button
+                onClick={() => setShowPurchaseModal(true)}
+                className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent/90 transition-colors flex items-center space-x-2"
+              >
+                <Coins className="w-4 h-4" />
+                <span>Buy SpringFi Tokens</span>
+              </button>
             </div>
-
-            {/* Token Metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div>
-                <span className="text-sm text-muted-foreground">Holdings</span>
-                <p className="font-semibold">
-                  {token.purchasedAmount.toLocaleString()} {token.symbol}
-                </p>
-                <span className="text-xs text-muted-foreground">
-                  ≈ ${(token.purchasedAmount * token.currentPrice).toLocaleString()}
-                </span>
-              </div>
-              
-              <div>
-                <span className="text-sm text-muted-foreground">Volume (24h)</span>
-                <p className="font-semibold">${token.volume24h}</p>
-                <span className="text-xs text-muted-foreground">
-                  Last updated {token.lastUpdate}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-sm text-muted-foreground">Market Cap</span>
-                <p className="font-semibold">${token.marketCap}</p>
-                <span className="text-xs text-muted-foreground">
-                  Rank #123
-                </span>
-              </div>
-
-              <div>
-                <span className="text-sm text-muted-foreground">Supply</span>
-                <p className="font-semibold">
-                  {(Number(token.circulatingSupply) / 1000000).toFixed(1)}M
-                </p>
-                <span className="text-xs text-muted-foreground">
-                  of {(Number(token.totalSupply) / 1000000000).toFixed(1)}B
-                </span>
-              </div>
-            </div>
-
-            {/* Additional Metrics */}
-            <div className="mt-6 pt-6 border-t border-border/50 
-              grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div>
-                <span className="text-sm text-muted-foreground">Purchase Price</span>
-                <p className="font-semibold">${token.purchasePrice}</p>
-              </div>
-              
-              <div>
-                <span className="text-sm text-muted-foreground">All-Time High</span>
-                <p className="font-semibold">${token.allTimeHigh}</p>
-              </div>
-
-              <div>
-                <span className="text-sm text-muted-foreground">All-Time Low</span>
-                <p className="font-semibold">${token.allTimeLow}</p>
-              </div>
-
-              <div>
-                <span className="text-sm text-muted-foreground">ROI</span>
-                <p className={`font-semibold ${
-                  token.currentPrice > token.purchasePrice 
-                    ? 'text-green-500' 
-                    : 'text-red-500'
-                }`}>
-                  {((token.currentPrice - token.purchasePrice) / 
-                    token.purchasePrice * 100).toFixed(2)}%
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+          </div>
+        )}
       </section>
 
       {/* Purchase Modal */}
