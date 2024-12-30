@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { WalletIcon, ArrowRightIcon, InfoIcon } from "lucide-react";
 import { PaymentSuccessModal } from './PaymentSuccessModal';
@@ -372,18 +372,102 @@ const BuySection = () => {
     setShowSuccessModal(true);
   };
 
-  const calculateTokens = (value) => {
-    // Example rate: 1 ETH = 50000 tokens
-    const rates = {
-      ETH: 50000,
-      BNB: 150000,
-      MATIC: 300000,
-      USDT: 1,
+  const { data: tokenPriceInUSDT } = useReadContract({
+    address: "0x3bFF294B158e2a809A3adC952315eF65e47B7344",
+    abi: abi,
+    functionName: "TokenPriceInUSDT",
+    watch: true
+  });
+
+  const [tokenPrices, setTokenPrices] = useState({
+    ETH: 0,
+    BNB: 0,
+    MATIC: 0
+  });
+
+  // Fetch crypto prices from CoinGecko
+  useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        const response = await fetch(
+          'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,binancecoin,matic-network&vs_currencies=usd'
+        );
+        const data = await response.json();
+        
+        setTokenPrices({
+          ETH: data.ethereum.usd,
+          BNB: data.binancecoin.usd,
+          MATIC: data['matic-network'].usd
+        });
+        console.log('Updated crypto prices:', {
+          ETH: data.ethereum.usd,
+          BNB: data.binancecoin.usd,
+          MATIC: data['matic-network'].usd
+        });
+      } catch (error) {
+        console.error('Error fetching prices:', error);
+      }
     };
 
-    const rate = rates[selectedToken] || 1;
-    return (parseFloat(value) * rate || 0).toFixed(2);
-  };
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const calculateTokens = useCallback((value) => {
+    console.log('Calculate Tokens Input:', {
+      value,
+      tokenPriceInUSDT: tokenPriceInUSDT?.toString(),
+      selectedToken,
+      cryptoPrices: tokenPrices
+    });
+
+    if (!value) {
+      console.log('No value provided');
+      return "0.00";
+    }
+
+    try {
+      // Set token price in USDT (e.g., 1 token = 0.1 USDT)
+      const tokenPrice = tokenPriceInUSDT ? Number(tokenPriceInUSDT) / 10**6 : 0.1; // Convert from USDT decimals (6)
+      console.log('Token price in USDT:', tokenPrice);
+      
+      let tokenAmount;
+      if (selectedToken === "USDT") {
+        // Direct USDT conversion
+        tokenAmount = Number(value) / tokenPrice;
+      } else {
+        // Get crypto price in USD
+        const cryptoPrice = tokenPrices[selectedToken];
+        console.log(`${selectedToken} price in USD:`, cryptoPrice);
+        
+        // Convert crypto to USDT equivalent
+        const usdtValue = Number(value) * cryptoPrice;
+        console.log('USDT equivalent:', usdtValue);
+        
+        // Calculate final token amount
+        tokenAmount = usdtValue / tokenPrice;
+      }
+      
+      console.log('Final token amount:', tokenAmount);
+      return tokenAmount.toFixed(2);
+    } catch (error) {
+      console.error('Error calculating tokens:', error);
+      return "0.00";
+    }
+  }, [selectedToken, tokenPrices, tokenPriceInUSDT]);
+
+  // Update token amount when input amount or prices change
+  useEffect(() => {
+    const newAmount = calculateTokens(amount);
+    console.log('Setting new token amount:', newAmount);
+    setTokenAmount(newAmount);
+  }, [amount, calculateTokens]);
+
+  // Debug log when token amount changes
+  useEffect(() => {
+    console.log('Token amount updated:', tokenAmount);
+  }, [tokenAmount]);
 
   const { isConnected } = useAccount();
 
@@ -391,9 +475,13 @@ const BuySection = () => {
   
  
 
+  const [isUSDTApproved, setIsUSDTApproved] = useState(false);
+  const [isBuyLoading, setIsBuyLoading] = useState(false);
+
   const handleNative = async () => {
-    if (!amount) return
+    if (!amount) return;
     try {
+      setIsBuyLoading(true);
       const tx = await nativepayment({
         address: "0xC414436B424318808069A9ec5B65C52A7523c743",
         abi: abi,
@@ -412,6 +500,8 @@ const BuySection = () => {
       }
     } catch (error) {
       console.error("Error:", error)
+    } finally {
+      setIsBuyLoading(false);
     }
   }
 
@@ -420,8 +510,9 @@ const BuySection = () => {
  
 
   const handleUSDT = async () => {
-    if (!amount) return
+    if (!amount) return;
     try {
+      setIsBuyLoading(true);
       const tx = await USDTPAYMENT({
         address: '0xC414436B424318808069A9ec5B65C52A7523c743',
         abi: abi,
@@ -440,6 +531,8 @@ const BuySection = () => {
       }
     } catch (error) {
       console.error("Error:", error)
+    } finally {
+      setIsBuyLoading(false);
     }
   }
 
@@ -453,9 +546,9 @@ const BuySection = () => {
     
     try {
       console.log("Starting USDT approval...");
-      const usdtAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // Mainnet USDT address
-      const spenderAddress = "0xC414436B424318808069A9ec5B65C52A7523c743"; // Your contract address
-      const maxApproval = "115792089237316195423570985008687907853269984665640564039457584007913129639935"; // Max uint256
+      const usdtAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+      const spenderAddress = "0xC414436B424318808069A9ec5B65C52A7523c743";
+      const maxApproval = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
       const tx = await approveUSDT({
         address: usdtAddress,
@@ -476,8 +569,10 @@ const BuySection = () => {
       });
 
       console.log("Approval transaction submitted:", tx);
+      setIsUSDTApproved(true);
     } catch (error) {
       console.error("Error in USDT approval:", error);
+      setIsUSDTApproved(false);
     }
   };
 
@@ -599,21 +694,21 @@ const BuySection = () => {
               </p>
             </div>
 
-            <div className="flex flex-col space-y-2 mb-4">
-              <label className="text-sm font-medium text-gray-300">Select Network</label>
-              <div className="flex space-x-2">
+            <div className="flex flex-col space-y-3 mb-6">
+              <label className="text-base font-medium text-gray-300">Select Network</label>
+              <div className="flex space-x-4">
                 {Object.entries(networks).map(([id, network]) => (
                   <button
                     key={id}
                     onClick={() => handleNetworkChange(id)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg border ${
+                    className={`flex-1 flex items-center justify-center space-x-3 px-6 py-4 rounded-xl border transition-all duration-200 ${
                       selectedNetwork === id
                         ? 'border-accent-500 bg-accent-500/20'
-                        : 'border-gray-700 hover:border-accent-500/50'
+                        : 'border-gray-700 hover:border-accent-500/50 hover:bg-accent-500/10'
                     }`}
                   >
-                    <img src={network.icon} alt={network.name} className="w-5 h-5" />
-                    <span className="text-sm font-medium">{network.name}</span>
+                    <img src={network.icon} alt={network.name} className="w-8 h-8" />
+                    <span className="text-lg font-medium">{network.name}</span>
                   </button>
                 ))}
               </div>
@@ -690,56 +785,50 @@ const BuySection = () => {
               </motion.div>
 
               <div className="w-full max-w-md mx-auto space-y-4">
-                {isConnected && selectedToken === "USDT" && (
+                {isConnected && selectedToken === "USDT" && !isUSDTApproved && (
                   <motion.button
-                    className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center space-x-2"
+                    className="w-full px-6 py-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 
+                    flex items-center justify-center space-x-2 font-medium text-lg disabled:opacity-50"
                     onClick={handleApproveUSDT}
                     disabled={isApproveLoading}
                     whileTap={{ scale: 0.95 }}
                   >
                     {isApproveLoading ? (
-                      <span>Approving...</span>
+                      <span>Approving USDT...</span>
                     ) : (
                       <>
                         <span>Approve USDT</span>
-                        <ArrowRightIcon className="w-4 h-4" />
+                        <ArrowRightIcon className="w-5 h-5" />
                       </>
                     )}
                   </motion.button>
                 )}
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full relative group"
-                >
-                  <div
-                    className="absolute inset-0 bg-gradient-to-r from-accent-500 to-secondary-500 
-                    rounded-xl blur-sm opacity-70 group-hover:opacity-100 transition-opacity"
-                  />
-                  <div
-                    className="relative bg-background-elevated border border-accent-500/20 
-                    rounded-xl px-6 py-4 flex items-center justify-center space-x-2 
-                    group-hover:bg-transparent transition-colors"
+                {isConnected && (selectedToken !== "USDT" || isUSDTApproved) && (
+                  <motion.button
+                    className="w-full px-6 py-4 bg-accent-500 text-white rounded-xl 
+                    hover:bg-accent-600 flex items-center justify-center space-x-2 
+                    font-medium text-lg disabled:opacity-50"
+                    onClick={handleselectTokenPayment}
+                    disabled={!amount || isBuyLoading}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <WalletIcon className="w-5 h-5 text-accent-400" />
-                    <span className="font-semibold text-text">
-                      {isConnected ? (
-                        <button
-                          onClick={handleselectTokenPayment}
-                        >
-                          Buy
-                        </button>
-                      ) : (
-                        <ConnectButton />
-                      )}
-                    </span>
-                    <ArrowRightIcon
-                      className="w-4 h-4 text-accent-400 
-                      group-hover:translate-x-1 transition-transform"
-                    />
+                    {isBuyLoading ? (
+                      <span>Processing...</span>
+                    ) : (
+                      <>
+                        <span>Buy with {selectedToken}</span>
+                        <ArrowRightIcon className="w-5 h-5" />
+                      </>
+                    )}
+                  </motion.button>
+                )}
+
+                {!isConnected && (
+                  <div className="flex justify-center">
+                    <ConnectButton />
                   </div>
-                </motion.button>
+                )}
               </div>
 
             </div>
