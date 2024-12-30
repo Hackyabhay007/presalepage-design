@@ -428,14 +428,15 @@ const BuySection = () => {
     }
 
     try {
-      // Set token price in USDT (e.g., 1 token = 0.1 USDT)
-      const tokenPrice = tokenPriceInUSDT ? Number(tokenPriceInUSDT) / 10**6 : 0.1; // Convert from USDT decimals (6)
+      // Token price is $1 USDT (from contract)
+      const tokenPrice = tokenPriceInUSDT ? Number(tokenPriceInUSDT) / 10**6 : 1;
       console.log('Token price in USDT:', tokenPrice);
       
       let tokenAmount;
       if (selectedToken === "USDT") {
         // Direct USDT conversion
         tokenAmount = Number(value) / tokenPrice;
+        console.log('USDT direct conversion:', tokenAmount);
       } else {
         // Get crypto price in USD
         const cryptoPrice = tokenPrices[selectedToken];
@@ -447,9 +448,9 @@ const BuySection = () => {
         
         // Calculate final token amount
         tokenAmount = usdtValue / tokenPrice;
+        console.log(`Final token amount (${selectedToken}):`, tokenAmount);
       }
       
-      console.log('Final token amount:', tokenAmount);
       return tokenAmount.toFixed(2);
     } catch (error) {
       console.error('Error calculating tokens:', error);
