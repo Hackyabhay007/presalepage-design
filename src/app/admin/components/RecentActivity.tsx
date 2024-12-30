@@ -2,22 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TokenPurchaseEvent, getTokenPurchaseEvents } from '@/lib/contractEvents';
 import { formatDistanceToNow } from 'date-fns';
-import { Coins, ExternalLink, RefreshCcw } from 'lucide-react';
+import { Coins, RefreshCcw } from 'lucide-react';
+import { UserDeposit, getUserDeposits } from '@/lib/supabase';
 
 export function RecentActivity() {
-  const [events, setEvents] = useState<TokenPurchaseEvent[]>([]);
+  const [deposits, setDeposits] = useState<UserDeposit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchEvents = async () => {
+  const fetchDeposits = async () => {
     try {
       setIsRefreshing(true);
-      const events = await getTokenPurchaseEvents();
-      setEvents(events);
+      const deposits = await getUserDeposits();
+      setDeposits(deposits);
     } catch (error) {
-      console.error('Error fetching events:', error);
+      console.error('Error fetching deposits:', error);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -25,23 +25,16 @@ export function RecentActivity() {
   };
 
   useEffect(() => {
-    fetchEvents();
+    fetchDeposits();
     // Set up polling every 30 seconds
-    const interval = setInterval(fetchEvents, 30000);
+    const interval = setInterval(fetchDeposits, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const formatAmount = (amount: number, type: 'native' | 'usdt') => {
-    return amount.toLocaleString(undefined, {
-      minimumFractionDigits: type === 'native' ? 4 : 2,
-      maximumFractionDigits: type === 'native' ? 4 : 2
-    });
-  };
-
-  const formatTokenAmount = (amount: number) => {
-    return amount.toLocaleString(undefined, {
+  const formatAmount = (amount: number) => {
+    return Number(amount).toLocaleString(undefined, {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 4
     });
   };
 
@@ -56,9 +49,9 @@ export function RecentActivity() {
   return (
     <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Recent Activity</h2>
+        <h2 className="text-xl font-semibold">Recent Deposits</h2>
         <button
-          onClick={fetchEvents}
+          onClick={fetchDeposits}
           className="p-2 hover:bg-accent/10 rounded-lg transition-colors"
           disabled={isRefreshing}
         >
@@ -67,58 +60,41 @@ export function RecentActivity() {
       </div>
 
       <div className="space-y-4">
-        {events.length > 0 ? (
-          events.map((event) => (
+        {deposits.length > 0 ? (
+          deposits.map((deposit) => (
             <motion.div
-              key={event.id}
+              key={deposit.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-background/50 border border-border/50 rounded-lg p-4"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4">
-                  <div className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center
-                    ${event.type === 'native' 
-                      ? 'bg-blue-500/10 text-blue-500' 
-                      : 'bg-green-500/10 text-green-500'}`}
-                  >
+                  <div className="mt-1 w-8 h-8 rounded-full flex items-center justify-center bg-blue-500/10 text-blue-500">
                     <Coins className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium">
-                        {event.type === 'native' ? 'ETH' : 'USDT'} Purchase
+                      <span className="font-medium truncate max-w-[200px]">
+                        {deposit.address}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(event.timestamp * 1000, { addSuffix: true })}
+                        {formatDistanceToNow(new Date(deposit.last_updated), { addSuffix: true })}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {event.buyer.slice(0, 6)}...{event.buyer.slice(-4)} bought{' '}
-                      <span className="text-foreground font-medium">
-                        {formatTokenAmount(event.tokenAmount)} NXS
-                      </span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Amount: {formatAmount(event.amount, event.type)}{' '}
-                      {event.type === 'native' ? 'ETH' : 'USDT'}
-                    </p>
+                    <div className="text-sm text-muted-foreground mt-1 space-y-1">
+                      <p>Native: <span className="text-foreground">{formatAmount(deposit.total_native_deposit)} ETH</span></p>
+                      <p>USDT: <span className="text-foreground">{formatAmount(deposit.total_usdt_deposit)} USDT</span></p>
+                      <p>Tokens: <span className="text-foreground">{formatAmount(deposit.total_token_amount)} NXS</span></p>
+                    </div>
                   </div>
                 </div>
-                <a
-                  href={`${process.env.NEXT_PUBLIC_BLOCK_EXPLORER_URL}/tx/${event.transactionHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-accent hover:text-accent/80 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </a>
               </div>
             </motion.div>
           ))
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            No purchase events found
+          <div className="text-center text-muted-foreground py-8">
+            No deposits found
           </div>
         )}
       </div>

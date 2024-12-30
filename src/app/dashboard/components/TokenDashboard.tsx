@@ -1,4 +1,3 @@
-// components/TokenDashboard.tsx
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,19 +5,32 @@ import {
   Coins, 
   TrendingUp, 
   TrendingDown,
-  ArrowRight,
   Wallet,
-  Clock,
   Activity,
-  DollarSign,
-  BarChart3,
-  Shield,
-  Percent,
-  History
+  DollarSign
 } from 'lucide-react';
 import BuyTokenModal from './BuyTokenModal';
 import { TransactionHistory } from './TransactionHistory';
 import { useAccount } from 'wagmi';
+import { supabase } from '@/lib/supabase';
+
+interface UserDeposit {
+  id: number;
+  address: string;
+  total_native_deposit: number;
+  total_usdt_deposit: number;
+  total_token_amount: number;
+  last_updated: string;
+}
+
+interface UserTransfer {
+  id: number;
+  address: string;
+  amount: number;
+  type: 'native' | 'usdt';
+  timestamp: string;
+  transaction_hash: string;
+}
 
 interface Transaction {
   id: string;
@@ -27,115 +39,122 @@ interface Transaction {
   amount: number;
   price: number;
   timestamp: string;
-  status: 'completed' | 'pending' | 'failed';
+  status: 'completed';
   network: string;
 }
 
-const networks = [
-  { id: 'eth', name: 'Ethereum', icon: '/eth.svg', color: 'blue' },
-  { id: 'bsc', name: 'BSC', icon: '/bsc.svg', color: 'yellow' },
-  { id: 'polygon', name: 'Polygon', icon: '/polygon.svg', color: 'purple' }
-];
-
-const tokens = {
-  eth: [
-    { id: 'eth', symbol: 'ETH', name: 'Ethereum' },
-    { id: 'usdt', symbol: 'USDT', name: 'Tether' }
-  ],
-  bsc: [
-    { id: 'bnb', symbol: 'BNB', name: 'BNB' },
-    { id: 'busd', symbol: 'BUSD', name: 'BUSD' }
-  ],
-  polygon: [
-    { id: 'matic', symbol: 'MATIC', name: 'Polygon' },
-    { id: 'usdc', symbol: 'USDC', name: 'USD Coin' }
-  ]
-};
-
 export function TokenDashboard() {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState(null);
-  const [selectedToken, setSelectedToken] = useState(null);
-  const [purchaseStep, setPurchaseStep] = useState(1);
-  const [purchaseAmount, setPurchaseAmount] = useState('');
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(false); 
-  const [portfolioData, setPortfolioData] = useState({
-    totalValue: 0,
-    totalTokenAmount: 0,
-    volume24h: 0,
-    totalProfit: 0
-  });
-  const { address } = useAccount();
+  const [isLoading, setIsLoading] = useState(true);
+  const [userDeposits, setUserDeposits] = useState<UserDeposit | null>(null);
+  const [userTransfers, setUserTransfers] = useState<UserTransfer[]>([]);
+  const [ethPrice, setEthPrice] = useState(0);
+  const { address, isConnected } = useAccount();
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!address) {
+    const fetchEthPrice = async () => {
+      try {
+        const response = await fetch(
+          'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
+        );
+        const data = await response.json();
+        setEthPrice(data.ethereum.usd);
+      } catch (error) {
+        console.error('Error fetching ETH price:', error);
+        setEthPrice(2000); // Fallback price
+      }
+    };
+
+    const fetchUserData = async () => {
+      if (!isConnected || !address) {
         setIsLoading(false);
         return;
       }
-      
+
       try {
         setIsLoading(true);
         
-        // Fetch transactions
-        const txResponse = await fetch(`/api/transactions?address=${address}`);
-        if (!txResponse.ok) {
-          throw new Error('Failed to fetch transactions');
-        }
-        const txData = await txResponse.json();
-        setTransactions(txData);
+        // Fetch user deposits
+        const { data: depositsData, error: depositsError } = await supabase
+          .from('user_deposits')
+          .select('*')
+          .eq('address', address.toLowerCase())
+          .single();
 
-        // Fetch portfolio data
-        const portfolioResponse = await fetch(`/api/portfolio?address=${address}`);
-        if (!portfolioResponse.ok) {
-          throw new Error('Failed to fetch portfolio data');
+        if (depositsError && depositsError.code !== 'PGRST116') {
+          console.error('Error fetching deposits:', depositsError);
+          throw depositsError;
         }
-        const portfolioData = await portfolioResponse.json();
-        setPortfolioData(portfolioData);
+
+        // Fetch user transfers
+        const { data: transfersData, error: transfersError } = await supabase
+          .from('user_transfers')
+          .select('*')
+          .eq('address', address.toLowerCase())
+          .order('timestamp', { ascending: false });
+
+        if (transfersError) {
+          console.error('Error fetching transfers:', transfersError);
+          throw transfersError;
+        }
+
+        setUserDeposits(depositsData);
+        setUserTransfers(transfersData || []);
+
+        // Fetch ETH price
+        await fetchEthPrice();
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setTransactions([]);
-        setPortfolioData({
-          totalValue: 0,
-          totalTokenAmount: 0,
-          volume24h: 0,
-          totalProfit: 0
-        });
+        console.error('Error fetching user data:', error);
+        setUserDeposits(null);
+        setUserTransfers([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
-  }, [address]);
+    fetchUserData();
+    // Refresh data every minute
+    const interval = setInterval(fetchUserData, 60000);
+    return () => clearInterval(interval);
+  }, [address, isConnected]);
 
-  interface StatsCardProps {
-    title: string;
-    value: string;
-    icon: React.ElementType;
-    trend?: number | null;
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const totalUsdValue = userDeposits
+    ? (userDeposits.total_native_deposit * ethPrice) + userDeposits.total_usdt_deposit
+    : 0;
+
+  const transformTransfers = (transfers: UserTransfer[]): Transaction[] => {
+    return transfers.map(transfer => ({
+      id: transfer.id.toString(),
+      type: 'transfer',
+      tokenSymbol: transfer.type === 'native' ? 'ETH' : 'USDT',
+      amount: transfer.amount,
+      price: transfer.type === 'native' ? ethPrice : 1,
+      timestamp: transfer.timestamp,
+      status: 'completed',
+      network: 'Ethereum'
+    }));
+  };
+
+  if (!isConnected || !address) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Wallet className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
+          <p className="text-muted-foreground">
+            Connect your wallet to view your dashboard and transaction history
+          </p>
+        </div>
+      </div>
+    );
   }
-
-  const StatsCard = ({ title, value, icon: Icon, trend = null }: StatsCardProps) => (
-    <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4">
-      <div className="flex justify-between items-start mb-2">
-        <span className="text-sm text-muted-foreground">{title}</span>
-        <Icon className="w-4 h-4 text-accent" />
-      </div>
-      <div className="flex items-end justify-between">
-        <span className="text-2xl font-bold">{value}</span>
-        {trend && (
-          <span className={`flex items-center text-sm ${
-            trend > 0 ? 'text-green-500' : 'text-red-500'
-          }`}>
-            {trend > 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
-            {Math.abs(trend)}%
-          </span>
-        )}
-      </div>
-    </div>
-  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -158,63 +177,71 @@ export function TokenDashboard() {
           </motion.button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatsCard 
-            title="Total Value" 
-            value={isLoading ? "Loading..." : `$${portfolioData.totalValue.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })}`}
-            icon={DollarSign}
-            trend={isLoading ? null : 12.5} 
-          />
-          <StatsCard 
-            title="Active Tokens" 
-            value={isLoading ? "Loading..." : portfolioData.totalTokenAmount.toLocaleString()} 
-            icon={Coins} 
-          />
-          <StatsCard 
-            title="24h Volume" 
-            value={isLoading ? "Loading..." : `$${(portfolioData.volume24h / 1000000).toFixed(1)}M`}
-            icon={Activity}
-            trend={isLoading ? null : -5.2} 
-          />
-          <StatsCard 
-            title="Total Profit" 
-            value={isLoading ? "Loading..." : `$${portfolioData.totalProfit.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })}`}
-            icon={TrendingUp}
-            trend={isLoading ? null : (portfolioData.totalProfit > 0 ? 8.7 : -8.7)} 
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-sm text-muted-foreground">Total Value</span>
+              <DollarSign className="w-4 h-4 text-accent" />
+            </div>
+            <div className="flex items-end justify-between">
+              <span className="text-2xl font-bold">
+                ${isLoading ? "Loading..." : formatCurrency(totalUsdValue)}
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-sm text-muted-foreground">Token Balance</span>
+              <Coins className="w-4 h-4 text-accent" />
+            </div>
+            <div className="flex items-end justify-between">
+              <span className="text-2xl font-bold">
+                {isLoading ? "Loading..." : formatCurrency(userDeposits?.total_token_amount || 0)} NXS
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-sm text-muted-foreground">24h Activity</span>
+              <Activity className="w-4 h-4 text-accent" />
+            </div>
+            <div className="flex items-end justify-between">
+              <span className="text-2xl font-bold">
+                {userTransfers.filter(tx => 
+                  new Date(tx.timestamp).getTime() > Date.now() - 24 * 60 * 60 * 1000
+                ).length} transfers
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Transaction History Section */}
       <section className="mt-12">
-        {isLoading && address ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
           </div>
-        ) : transactions.length > 0 ? (
-          <TransactionHistory transactions={transactions} />
+        ) : userTransfers.length > 0 ? (
+          <TransactionHistory transactions={transformTransfers(userTransfers)} />
         ) : (
           <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-8">
             <div className="flex flex-col items-center justify-center text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
                 <Coins className="w-6 h-6 text-accent" />
               </div>
-              <h3 className="text-lg font-semibold">Welcome to SpringFi!</h3>
+              <h3 className="text-lg font-semibold">No Transactions Yet</h3>
               <p className="text-muted-foreground max-w-sm">
-                Start your journey by buying SpringFi tokens. Once you make your first purchase, your transaction history will appear here.
+                Start your journey by buying tokens. Your transaction history will appear here.
               </p>
               <button
                 onClick={() => setShowPurchaseModal(true)}
                 className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent/90 transition-colors flex items-center space-x-2"
               >
                 <Coins className="w-4 h-4" />
-                <span>Buy SpringFi Tokens</span>
+                <span>Buy Tokens</span>
               </button>
             </div>
           </div>
@@ -231,10 +258,10 @@ export function TokenDashboard() {
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 
               flex items-center justify-center p-4"
           >
-           <BuyTokenModal 
-             isOpen={showPurchaseModal}
-             onClose={() => setShowPurchaseModal(false)}
-           />
+            <BuyTokenModal 
+              isOpen={showPurchaseModal}
+              onClose={() => setShowPurchaseModal(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>
