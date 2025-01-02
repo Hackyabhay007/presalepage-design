@@ -827,7 +827,19 @@ const BuySection = () => {
 
                 {!isConnected && (
                   <div className="flex justify-center">
-                    <ConnectButton />
+                    <ConnectButton.Custom>
+                      {({ account, chain, connect, isLoading, mounted }) => (
+                        <button
+                          className="w-full px-6 py-4 bg-accent-500/10 border border-accent-500/20 hover:bg-accent-500/20
+                            text-text-secondary font-medium text-lg transition-colors rounded-xl flex items-center justify-center"
+                          onClick={connect}
+                          disabled={isLoading}
+                        >
+                          <WalletIcon className="w-5 h-5 mr-2" />
+                          {mounted && account ? `${account.address}` : ` Wallet not connected`}
+                        </button>
+                      )}
+                    </ConnectButton.Custom>
                   </div>
                 )}
               </div>
