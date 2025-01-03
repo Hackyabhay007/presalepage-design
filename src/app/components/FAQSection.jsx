@@ -8,8 +8,8 @@ const FAQSection = () => {
 
   const faqs = [
     {
-      question: "What is Springfi?",
-      answer: "Springfi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap between retail investors and high-potential Web3 startups. It uses innovative staking and burning mechanisms through the native $SPY token to provide equitable access to token sales.",
+      question: "What is SwingFi?",
+      answer: "SwingFi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap between retail investors and high-potential Web3 startups. It uses innovative staking and burning mechanisms through the native $SPY token to provide equitable access to token sales.",
       icon: Sparkles
     },
     {
@@ -23,8 +23,8 @@ const FAQSection = () => {
       icon: Sparkles
     },
     {
-      question: "What chains does Springfi support?",
-      answer: "Springfi supports multiple blockchains including Ethereum, Binance Smart Chain, and Polygon. This cross-chain compatibility enables scalability and flexibility for users across different networks.",
+      question: "What chains does SwingFi support?",
+      answer: "SwingFi supports multiple blockchains including Ethereum, Binance Smart Chain, and Polygon. This cross-chain compatibility enables scalability and flexibility for users across different networks.",
       icon: MessageCircle
     },
     {

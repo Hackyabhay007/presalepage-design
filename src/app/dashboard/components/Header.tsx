@@ -108,8 +108,8 @@ export function Header() {
                   className=" flex items-center justify-center"
                 >
                      <Image 
-                        src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg" 
-                        alt="SpringFi Logo"
+                        src="https://SwingFi.org/_next/static/media/Logo.4ffd2ef6.svg" 
+                        alt="SwingFi Logo"
                         width={120}  // Increased from 100
                         height={120}  // Increased from 40
                       />

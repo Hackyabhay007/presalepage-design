@@ -4,30 +4,30 @@ import { TokenDashboard } from './components/TokenDashboard';
 import { Providers } from '../providers';
 
 /* export const metadata: Metadata = {
-  title: 'SpringFi | Next-Generation DeFi Ecosystem',
-  description: 'Experience the future of DeFi with SpringFi. Trade, stake, and earn rewards in a secure and innovative blockchain ecosystem.',
-  keywords: 'SpringFi, DeFi platform, cryptocurrency trading, staking rewards, blockchain technology, crypto investment',
+  title: 'SwingFi | Next-Generation DeFi Ecosystem',
+  description: 'Experience the future of DeFi with SwingFi. Trade, stake, and earn rewards in a secure and innovative blockchain ecosystem.',
+  keywords: 'SwingFi, DeFi platform, cryptocurrency trading, staking rewards, blockchain technology, crypto investment',
   openGraph: {
-    title: 'SpringFi | Next-Generation DeFi Ecosystem',
-    description: 'Experience the future of DeFi with SpringFi. Trade, stake, and earn rewards in a secure and innovative blockchain ecosystem.',
+    title: 'SwingFi | Next-Generation DeFi Ecosystem',
+    description: 'Experience the future of DeFi with SwingFi. Trade, stake, and earn rewards in a secure and innovative blockchain ecosystem.',
     type: 'website',
-    url: 'https://springfi.org',
+    url: 'https://SwingFi.org',
     images: [
       {
-        url: 'https://springfi.org/og-image.png',
+        url: 'https://SwingFi.org/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'SpringFi Platform Preview',
+        alt: 'SwingFi Platform Preview',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@SpringFi',
-    creator: '@SpringFi',
+    site: '@SwingFi',
+    creator: '@SwingFi',
   },
   alternates: {
-    canonical: 'https://springfi.org',
+    canonical: 'https://SwingFi.org',
   },
   robots: {
     index: true,

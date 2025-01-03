@@ -6,18 +6,18 @@ import Navbar from '@/app/components/navigation/Navbar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SpringFi - DeFi Ecosystem',
-  description: 'SpringFi: Your Gateway to Decentralized Finance. Trade, Stake, and Earn in a Secure DeFi Ecosystem.',
-  keywords: 'SpringFi, DeFi, Cryptocurrency, Blockchain, Staking, Trading, Yield Farming',
-  authors: [{ name: 'SpringFi Team' }],
+  title: 'SwingFi - DeFi Ecosystem',
+  description: 'SwingFi: Your Gateway to Decentralized Finance. Trade, Stake, and Earn in a Secure DeFi Ecosystem.',
+  keywords: 'SwingFi, DeFi, Cryptocurrency, Blockchain, Staking, Trading, Yield Farming',
+  authors: [{ name: 'SwingFi Team' }],
   openGraph: {
-    title: 'SpringFi - DeFi Ecosystem',
-    description: 'SpringFi: Your Gateway to Decentralized Finance. Trade, Stake, and Earn in a Secure DeFi Ecosystem.',
-    url: 'https://springfi.org',
-    siteName: 'SpringFi',
+    title: 'SwingFi - DeFi Ecosystem',
+    description: 'SwingFi: Your Gateway to Decentralized Finance. Trade, Stake, and Earn in a Secure DeFi Ecosystem.',
+    url: 'https://SwingFi.org',
+    siteName: 'SwingFi',
     images: [
       {
-        url: 'https://springfi.org/og-image.png', // Make sure to add your actual OG image path
+        url: 'https://SwingFi.org/og-image.png', // Make sure to add your actual OG image path
         width: 1200,
         height: 630,
       },
@@ -27,9 +27,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SpringFi - DeFi Ecosystem',
-    description: 'SpringFi: Your Gateway to Decentralized Finance. Trade, Stake, and Earn in a Secure DeFi Ecosystem.',
-    images: ['https://springfi.org/twitter-image.png'], // Make sure to add your actual Twitter image path
+    title: 'SwingFi - DeFi Ecosystem',
+    description: 'SwingFi: Your Gateway to Decentralized Finance. Trade, Stake, and Earn in a Secure DeFi Ecosystem.',
+    images: ['https://SwingFi.org/twitter-image.png'], // Make sure to add your actual Twitter image path
   },
 }
 

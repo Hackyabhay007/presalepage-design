@@ -49,7 +49,7 @@ export default function Whitepaper() {
       title: "Airdrop Mechanism",
       icon: Gift,
       points: [
-        "Reward early adopters and incentivize participation in the Springfi ecosystem.",
+        "Reward early adopters and incentivize participation in the SwingFi ecosystem.",
         "Distribute tokens efficiently using advanced tools like MultiSender."
       ]
     },
@@ -162,7 +162,7 @@ export default function Whitepaper() {
         <Rocket className="w-16 h-16 text-purple-500 mx-auto mb-6" />
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 
           bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-          Springfi Litepaper
+          SwingFi Litepaper
         </h1>
         <p className="text-xl text-gray-400 max-w-2xl mx-auto">
           Empowering Retail Investors for a Fair Web3 Future
@@ -180,9 +180,9 @@ export default function Whitepaper() {
           <h2 className="text-3xl font-bold mb-6">Introduction</h2>
           <div className="bg-gray-800/50 rounded-xl p-6 hover:bg-gray-800/70 transition-all duration-300">
             <p className="text-gray-300 leading-relaxed">
-              Springfi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap 
+              SwingFi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap 
               between retail investors and high-potential Web3 startups. By leveraging innovative 
-              staking and burning mechanisms through our native token, $SPY, Springfi provides an 
+              staking and burning mechanisms through our native token, $SPY, SwingFi provides an 
               equitable platform where everyone has a chance to participate in token sales, fostering 
               innovation and creating opportunities for retail investors to be part of the next big 
               success stories in blockchain.
@@ -292,7 +292,7 @@ export default function Whitepaper() {
         >
           <h2 className="text-3xl font-bold mb-6">Join the Movement</h2>
           <p className="text-gray-400 max-w-2xl mx-auto mb-10">
-            Springfi aims to redefine fairness in the Web3 space, empowering retail investors 
+            SwingFi aims to redefine fairness in the Web3 space, empowering retail investors 
             to access and fuel the growth of groundbreaking blockchain projects.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
