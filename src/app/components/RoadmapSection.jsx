@@ -62,57 +62,57 @@ const RoadmapSection = () => {
   const roadmapData = [
     {
       phase: 'Phase 1',
-      title: 'Genesis Launch',
+      title: 'Platform Foundation',
       status: 'completed',
       timeline: 'Q1 2024',
       items: [
-        'Smart Contract Development',
-        'Security Audit & KYC',
-        'Website & Dashboard',
-        'Community Building',
-        'Token Launch'
+        'Smart Contract Development for $SPY Token',
+        'Staking and Burning Mechanisms Implementation',
+        'Cross-Chain Infrastructure Setup',
+        'Security Audits and KYC Integration',
+        'Initial Community Building'
       ],
       icon: Binary,
     },
     {
       phase: 'Phase 2',
-      title: 'Network Expansion',
+      title: 'Core Features Launch',
       status: 'current',
       timeline: 'Q2 2024',
       items: [
-        'DEX Integration',
-        'Staking Platform',
-        'Partnerships Launch',
-        'Market Expansion',
-        'CEX Listing'
+        'Private Sale Platform Launch',
+        'Dutch Auction Implementation',
+        'FairLaunch System Deployment',
+        'MultiSender Airdrop Tools',
+        'Staking Platform Release'
       ],
       icon: Network,
     },
     {
       phase: 'Phase 3',
-      title: 'Ecosystem Growth',
+      title: 'Ecosystem Expansion',
       status: 'upcoming',
       timeline: 'Q3 2024',
       items: [
-        'Cross-chain Bridge',
-        'Governance Portal',
-        'NFT Marketplace',
-        'Mobile App Beta',
-        'SDK Release'
+        'Governance Portal Launch',
+        'Enhanced Community Rewards',
+        'Advanced Token Lock Mechanisms',
+        'Project Incubation Program',
+        'Cross-Chain Integration Expansion'
       ],
       icon: Cpu,
     },
     {
       phase: 'Phase 4',
-      title: 'Global Integration',
+      title: 'Global Scaling',
       status: 'upcoming',
       timeline: 'Q4 2024',
       items: [
-        'AI Integration',
-        'Global Partnerships',
-        'Enterprise Solutions',
-        'DAO Framework',
-        'Metaverse Portal'
+        'Advanced Analytics Dashboard',
+        'Strategic Partnerships',
+        'Enhanced Security Features',
+        'Mobile App Development',
+        'Institutional Integration Tools'
       ],
       icon: Globe2,
     }
