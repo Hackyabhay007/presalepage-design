@@ -13,6 +13,9 @@ import { Providers } from '@/app/providers';
 //rainbowkit imports
 
 import "@rainbow-me/rainbowkit/styles.css";
+import { Power } from "lucide-react";
+import PoweredBySection from "./components/PoweredBySection";
+
 
 export default function Home() { 
   return (
@@ -20,6 +23,7 @@ export default function Home() {
       <div className="flex min-h-screen flex-col">
         <Navbar />
         <HeroSection />
+        <PoweredBySection />
         <BuySection />
         <VisionSection />
         <TokenomicsSection />

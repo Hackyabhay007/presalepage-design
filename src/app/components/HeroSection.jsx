@@ -79,9 +79,9 @@ const PresaleHero = () => {
             {/* Key Features */}
             <div className="space-y-4 mb-8 text-left max-w-md mx-auto lg:mx-0">
               {[
-                'Early access to revolutionary DeFi platform',
-                'Exclusive presale bonus tokens',
-                'Guaranteed allocation in future rounds',
+                'Community Driven',
+                'Fair Access',
+                'Secure and safe investment opportunity',
               ].map((feature, index) => (
                 <motion.div
                   key={index}
