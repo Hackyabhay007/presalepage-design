@@ -74,8 +74,7 @@ const VisionSection = () => {
               </h2>
               
               <p className="text-lg text-text-secondary">
-                Built by developers, for developers. Our protocol introduces groundbreaking 
-                blockchain technology that scales without compromising decentralization.
+              Springfi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap between retail investors and high-potential Web3 startups. By leveraging innovative staking and burning mechanisms through our native token, $SPY, Springfi provides an equitable platform where everyone has a chance to participate in token sales, fostering innovation and creating opportunities for retail investors to be part of the next big success stories in blockchain.
               </p>
             </div>
 

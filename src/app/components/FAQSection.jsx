@@ -8,33 +8,33 @@ const FAQSection = () => {
 
   const faqs = [
     {
-      question: "What is a Launch Pad?",
-      answer: "A Launch Pad is a platform that enables projects to raise capital and launch their tokens in a decentralized and secure manner. It provides features like token presales, liquidity locking, and fair distribution mechanisms to ensure a successful token launch.",
+      question: "What is Springfi?",
+      answer: "Springfi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap between retail investors and high-potential Web3 startups. It uses innovative staking and burning mechanisms through the native $SPY token to provide equitable access to token sales.",
       icon: Sparkles
     },
     {
-      question: "How can I participate in presales?",
-      answer: "To participate in presales, you'll need to: 1) Connect your wallet, 2) Complete KYC verification if required, 3) Hold the minimum required tokens or meet other criteria, 4) Participate during the presale window with supported tokens (ETH, BNB, USDT).",
+      question: "How can I participate in token sales?",
+      answer: "There are two main ways to participate: 1) Burn $SPY tokens to access exclusive private sales, or 2) Stake $SPY tokens to participate in pre-sales and Dutch auctions. Each method ensures fair access while contributing to the ecosystem's growth.",
       icon: MessageCircle
     },
     {
-      question: "What chains do you support?",
-      answer: "We support multiple blockchains including Ethereum (ETH), Binance Smart Chain (BSC), and various USDT networks (ERC20, BEP20, TRC20). This allows for flexible participation options and lower transaction fees.",
+      question: "What are the tokenomics of $SPY?",
+      answer: "The total supply of $SPY is 5 Billion tokens, allocated as follows: 40% for Initial Coin Offering, 25% for Staking Rewards, 15% for Liquidity, 10% for Community Rewards, and 10% for Team (Development and Foundational Treasury).",
       icon: Sparkles
     },
     {
-      question: "How are presale tokens distributed?",
-      answer: "Presale tokens are automatically distributed to participant wallets after the presale concludes and all conditions are met. The distribution timeline varies by project but typically occurs within 24-48 hours of presale completion.",
+      question: "What chains does Springfi support?",
+      answer: "Springfi supports multiple blockchains including Ethereum, Binance Smart Chain, and Polygon. This cross-chain compatibility enables scalability and flexibility for users across different networks.",
       icon: MessageCircle
     },
     {
-      question: "Is KYC verification required?",
-      answer: "KYC requirements vary by project. While some presales may not require KYC, many projects implement verification to ensure regulatory compliance and project security. Check individual presale requirements for specific details.",
+      question: "What are the benefits of staking $SPY?",
+      answer: "Staking $SPY provides access to pre-sales and Dutch auctions while earning staking rewards. It also demonstrates long-term commitment to the ecosystem and may grant governance rights for platform decisions.",
       icon: Sparkles
     },
     {
-      question: "What are the fees involved?",
-      answer: "Our platform charges minimal fees to cover operational costs and ensure project quality. Typically, this includes a small percentage of raised funds and/or tokens. Exact fee structures are transparent and displayed before participation.",
+      question: "How does the burning mechanism work?",
+      answer: "Users can burn $SPY tokens to access exclusive private sales. This process permanently removes tokens from circulation, contributing to the deflationary tokenomics and potentially increasing the value of remaining tokens over time.",
       icon: MessageCircle
     }
   ];

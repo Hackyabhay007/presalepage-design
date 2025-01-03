@@ -179,7 +179,7 @@ const PresaleHero = () => {
           transition={{ duration: 2, repeat: Infinity }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center"
         >
-          <span className="text-text-secondary text-sm mb-2">Learn More</span>
+          <span className="text-text-secondary text-sm mb-2">BUY NOW</span>
           <ChevronDownIcon className="w-6 h-6 text-accent-400" />
         </motion.div>
       </div>
