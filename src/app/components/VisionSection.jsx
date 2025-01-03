@@ -6,26 +6,26 @@ const VisionSection = () => {
   const features = [
     {
       icon: Shield,
-      title: 'Security First',
-      description: 'Military-grade encryption with multi-signature validation ensures your assets remain protected.',
+      title: 'Fair Access',
+      description: 'Burn or stake $SPY tokens to participate in private sales, pre-sales, and Dutch auctions with equal opportunity.',
       gradient: 'from-cyan-500 to-accent-500'
     },
     {
       icon: Zap,
-      title: 'Lightning Fast',
-      description: 'Advanced blockchain architecture delivering instant transactions with minimal gas fees.',
+      title: 'Dutch Auctions',
+      description: 'Dynamic price discovery model ensuring fair token distribution based on market demand and value.',
       gradient: 'from-purple-500 to-pink-500'
     },
     {
       icon: Globe,
-      title: 'Cross-Chain Bridge',
-      description: 'Seamlessly bridge assets across multiple blockchains with our advanced protocol.',
+      title: 'Cross-Chain Support',
+      description: 'Compatible with Ethereum, Binance Smart Chain, and Polygon for maximum accessibility.',
       gradient: 'from-green-500 to-cyan-500'
     },
     {
       icon: Cpu,
-      title: 'Smart Contracts',
-      description: 'Audited by leading security firms, our smart contracts set new standards in DeFi.',
+      title: 'Community Rewards',
+      description: 'Earn rewards through staking, loyalty programs, and active ecosystem participation.',
       gradient: 'from-orange-500 to-red-500'
     }
   ];
