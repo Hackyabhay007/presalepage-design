@@ -845,7 +845,7 @@ const BuySection = () => {
               </div>
 
             </div>
-
+{/* 
             <div className="p-6 bg-background-elevated/50 border-t border-accent-500/20">
               <div className="flex items-start space-x-3">
                 <InfoIcon className="w-5 h-5 text-accent-400 mt-0.5 flex-shrink-0" />
@@ -855,7 +855,7 @@ const BuySection = () => {
                   network fees and token price at the time of purchase.
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </motion.div>
         </div>
