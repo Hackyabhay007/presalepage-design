@@ -97,7 +97,7 @@ const PresaleHero = () => {
             </div>
 
             {/* Info Alert */}
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
@@ -113,7 +113,7 @@ const PresaleHero = () => {
                   </a>
                 </div>
               </div>
-            </motion.div>
+            </motion.div> */}
           </motion.div>
 
           {/* Right Content - Token Visual */}
