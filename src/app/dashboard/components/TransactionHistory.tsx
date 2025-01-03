@@ -196,7 +196,7 @@ export default function TransactionHistory() {
               </p>
               <p className="text-sm">
                 <span className="text-muted-foreground">Tokens:</span>{' '}
-                {formatCurrency(tx.tokenAmount)} SFI
+                {formatCurrency(tx.tokenAmount)} SPY
               </p>
             </div>
           </div>

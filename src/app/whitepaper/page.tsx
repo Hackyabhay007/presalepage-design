@@ -120,9 +120,9 @@ export default function Whitepaper() {
   ];
 
   const handleNavigation = (path: string) => {
-    if (window.confirm('Are you sure you want to leave this page?')) {
+   
       router.push(path);
-    }
+    
   };
 
   if (isLoading) return <LoadingState />;

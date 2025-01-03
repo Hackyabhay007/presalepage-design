@@ -207,7 +207,7 @@ export function TokenDashboard() {
               <div className="animate-pulse h-8 bg-gray-200 rounded"></div>
             ) : (
               <p className="text-2xl font-bold">
-                {formatCurrency(userDeposits?.total_token_amount || 0)} SFI
+                {formatCurrency(userDeposits?.total_token_amount || 0)} SPY
               </p>
             )}
           </div>

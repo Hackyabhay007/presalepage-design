@@ -695,7 +695,7 @@ const BuySection = () => {
               </p>
             </div>
 
-            <div className="flex flex-col space-y-3 mb-6">
+            <div className="flex flex-col space-y-3 mb-6 p-6">
               <label className="text-base font-medium text-gray-300">Select Network</label>
               <div className="flex space-x-4">
                 {Object.entries(networks).map(([id, network]) => (
@@ -780,7 +780,7 @@ const BuySection = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-text-secondary">You will receive:</span>
                   <span className="text-xl font-bold text-accent-400">
-                    {tokenAmount} $SFI
+                    {tokenAmount} $SPY
                   </span>
                 </div>
               </motion.div>

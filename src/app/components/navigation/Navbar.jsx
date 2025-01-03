@@ -19,7 +19,8 @@ import {
   MailQuestion,
   Waypoints,
   Telescope,
-  X
+  X,
+  FileText, // Add this import for whitepaper icon
 } from 'lucide-react';
 
 import Image from 'next/image'
@@ -30,6 +31,12 @@ const menuItems = [
   { name: 'Tokenomics', href: '#tokenomics', icon: LayersIcon },
   { name: 'Roadmap', href: '#roadmap', icon: Waypoints },
   { name: 'FAQ', href: '#faq', icon: MailQuestion },
+  { 
+    name: 'Litepaper', 
+    href: '/whitepaper', // Update this with your actual whitepaper URL
+    icon: FileText,
+    isExternal: true 
+  },
 ];
 
 export default function CyberNavbar() {
@@ -50,9 +57,13 @@ export default function CyberNavbar() {
     }
   };
 
-  const scrollToSection = (e, href) => {
+  const handleMenuClick = (e, item) => {
+    if (item.isExternal) {
+      // For external links like whitepaper, let the default behavior happen
+      return;
+    }
     e.preventDefault();
-    const element = document.querySelector(href);
+    const element = document.querySelector(item.href);
     if (element) {
       const offsetTop = element.offsetTop;
       window.scrollTo({
@@ -127,7 +138,9 @@ export default function CyberNavbar() {
               <a
                 key={item.name}
                 href={item.href}
-                onClick={(e) => scrollToSection(e, item.href)}
+                onClick={(e) => handleMenuClick(e, item)}
+                target={item.isExternal ? "_blank" : "_self"}
+                rel={item.isExternal ? "noopener noreferrer" : ""}
                 className="text-gray-300 hover:text-accent-400 px-3 py-2 text-sm font-medium flex items-center space-x-2 transition-colors"
               >
                 <item.icon className="w-4 h-4" />
@@ -191,9 +204,11 @@ export default function CyberNavbar() {
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: -20, opacity: 0 }}
                 >
-                  <Link
+                  <a
                     href={item.href}
-                    onClick={() => setIsOpen(false)}
+                    onClick={(e) => handleMenuClick(e, item)}
+                    target={item.isExternal ? "_blank" : "_self"}
+                    rel={item.isExternal ? "noopener noreferrer" : ""}
                     className="flex items-center space-x-3 px-4 py-3 rounded-xl
                       hover:bg-secondary-600/10 group"
                   >
@@ -202,7 +217,7 @@ export default function CyberNavbar() {
                       transition-colors duration-200">
                       {item.name}
                     </span>
-                  </Link>
+                  </a>
                 </motion.div>
               ))}
               
