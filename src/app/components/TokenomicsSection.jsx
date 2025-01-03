@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Lock, 
   Rocket, 
-  BarChart3, 
+  GiftIcon, 
   Coins,
   Users,
   Leaf,
@@ -13,21 +13,20 @@ import {
 
 const TokenomicsSection = () => {
   // Tokenomics data
-const tokenDistribution = [
-    { label: 'Presale', percentage: 40, color: '#FF6B6B', icon: Rocket },
-    { label: 'Liquidity', percentage: 25, color: '#4ECDC4', icon: Coins },
-    { label: 'Development', percentage: 15, color: '#45B7D1', icon: Zap },
-    { label: 'Marketing', percentage: 10, color: '#96F7D2', icon: BarChart3 },
-    { label: 'Team', percentage: 5, color: '#9D50BB', icon: Users },
-    { label: 'Reserve', percentage: 5, color: '#F7B267', icon: Shield },
-];
+  const tokenDistribution = [
+    { label: 'Initial Coin Offering', percentage: 40, color: '#FF6B6B', icon: Rocket },
+    { label: 'Staking Rewards', percentage: 25, color: '#4ECDC4', icon: Coins },
+    { label: 'Liquidity', percentage: 15, color: '#45B7D1', icon: Zap },
+    { label: 'Community Rewards', percentage: 10, color: '#96F7D2', icon: GiftIcon },
+    { label: 'Team', percentage: 10, color: '#9D50BB', icon: Users },
+  ];
 
   // Token details
   const tokenDetails = [
-    { label: 'Token Symbol', value: '$SFI' },
-    { label: 'Total Supply', value: '1,000,000,000' },
+    { label: 'Token Symbol', value: '$SPY' },
+    { label: 'Total Supply', value: '5,000,000,000' },
     { label: 'Decimals', value: '18' },
-    { label: 'Initial Price', value: '$0.001' },
+    { label: 'ICO Allocation', value: '2,000,000,000 $SPY' },
   ];
 
   return (

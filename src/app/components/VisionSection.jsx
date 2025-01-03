@@ -70,7 +70,7 @@ const VisionSection = () => {
                   Revolutionizing
                 </span>
                 <br />
-                <span className="text-text">Decentralized Finance</span>
+                <span className="text-text">Decentralized Funding</span>
               </h2>
               
               <p className="text-lg text-text-secondary">
