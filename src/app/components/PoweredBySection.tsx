@@ -57,6 +57,7 @@ const SECOND_ROW_LOGOS = [
   }
 ];
 
+
 export default function PoweredBySection() {
   const [isHovered, setIsHovered] = useState(false);
   const firstRowRef = useRef<HTMLDivElement>(null);

@@ -66,7 +66,7 @@ const RoadmapSection = () => {
       status: 'completed',
       timeline: 'Q1 2024',
       items: [
-        'Smart Contract Development for $SPY Token',
+        'Smart Contract Development for $SWG Token',
         'Staking and Burning Mechanisms Implementation',
         'Cross-Chain Infrastructure Setup',
         'Security Audits and KYC Integration',

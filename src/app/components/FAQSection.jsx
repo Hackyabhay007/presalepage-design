@@ -9,17 +9,17 @@ const FAQSection = () => {
   const faqs = [
     {
       question: "What is SwingFi?",
-      answer: "SwingFi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap between retail investors and high-potential Web3 startups. It uses innovative staking and burning mechanisms through the native $SPY token to provide equitable access to token sales.",
+      answer: "SwingFi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap between retail investors and high-potential Web3 startups. It uses innovative staking and burning mechanisms through the native $SWG token to provide equitable access to token sales.",
       icon: Sparkles
     },
     {
       question: "How can I participate in token sales?",
-      answer: "There are two main ways to participate: 1) Burn $SPY tokens to access exclusive private sales, or 2) Stake $SPY tokens to participate in pre-sales and Dutch auctions. Each method ensures fair access while contributing to the ecosystem's growth.",
+      answer: "There are two main ways to participate: 1) Burn $SWG tokens to access exclusive private sales, or 2) Stake $SWG tokens to participate in pre-sales and Dutch auctions. Each method ensures fair access while contributing to the ecosystem's growth.",
       icon: MessageCircle
     },
     {
-      question: "What are the tokenomics of $SPY?",
-      answer: "The total supply of $SPY is 5 Billion tokens, allocated as follows: 40% for Initial Coin Offering, 25% for Staking Rewards, 15% for Liquidity, 10% for Community Rewards, and 10% for Team (Development and Foundational Treasury).",
+      question: "What are the tokenomics of $SWG?",
+      answer: "The total supply of $SWG is 5 Billion tokens, allocated as follows: 40% for Initial Coin Offering, 25% for Staking Rewards, 15% for Liquidity, 10% for Community Rewards, and 10% for Team (Development and Foundational Treasury).",
       icon: Sparkles
     },
     {
@@ -28,13 +28,13 @@ const FAQSection = () => {
       icon: MessageCircle
     },
     {
-      question: "What are the benefits of staking $SPY?",
-      answer: "Staking $SPY provides access to pre-sales and Dutch auctions while earning staking rewards. It also demonstrates long-term commitment to the ecosystem and may grant governance rights for platform decisions.",
+      question: "What are the benefits of staking $SWG?",
+      answer: "Staking $SWG provides access to pre-sales and Dutch auctions while earning staking rewards. It also demonstrates long-term commitment to the ecosystem and may grant governance rights for platform decisions.",
       icon: Sparkles
     },
     {
       question: "How does the burning mechanism work?",
-      answer: "Users can burn $SPY tokens to access exclusive private sales. This process permanently removes tokens from circulation, contributing to the deflationary tokenomics and potentially increasing the value of remaining tokens over time.",
+      answer: "Users can burn $SWG tokens to access exclusive private sales. This process permanently removes tokens from circulation, contributing to the deflationary tokenomics and potentially increasing the value of remaining tokens over time.",
       icon: MessageCircle
     }
   ];
@@ -161,7 +161,8 @@ const FAQSection = () => {
               transition-colors duration-300"
             >
               <MessageCircle className="w-5 h-5" />
-              <span>Contact Support</span>
+              <span>contact@swingfi.com
+              </span>
             </button>
           </div>
         </motion.div>

@@ -38,11 +38,11 @@ export default function Whitepaper() {
 
   const keyFeatures = [
     {
-      title: "Fair Access with $SPY",
+      title: "Fair Access with $SWG",
       icon: Shield,
       points: [
-        "Burn for Private Sales: Users can burn $SPY tokens to access exclusive private sales.",
-        "Stake for Pre-Sales and Dutch Auctions: Users stake $SPY tokens to participate in pre-sales and Dutch auctions."
+        "Burn for Private Sales: Users can burn $SWG tokens to access exclusive private sales.",
+        "Stake for Pre-Sales and Dutch Auctions: Users stake $SWG tokens to participate in pre-sales and Dutch auctions."
       ]
     },
     {
@@ -81,26 +81,26 @@ export default function Whitepaper() {
       title: "Community Incentives",
       icon: Heart,
       points: [
-        "Loyalty programs to reward long-term $SPY holders.",
+        "Loyalty programs to reward long-term $SWG holders.",
         "Community rewards allocated to engage and grow the ecosystem sustainably."
       ]
     }
   ];
 
   const tokenomics = [
-    { title: "Initial Coin Offering", percentage: 40, amount: "2 Billion $SPY", color: "bg-blue-500" },
-    { title: "Staking Rewards", percentage: 25, amount: "1.25 Billion $SPY", color: "bg-purple-500" },
-    { title: "Liquidity", percentage: 15, amount: "750 Million $SPY", color: "bg-green-500" },
-    { title: "Community Rewards", percentage: 10, amount: "500 Million $SPY", color: "bg-yellow-500" },
-    { title: "Team", percentage: 10, amount: "500 Million $SPY", color: "bg-pink-500" }
+    { title: "Initial Coin Offering", percentage: 40, amount: "2 Billion $SWG", color: "bg-blue-500" },
+    { title: "Staking Rewards", percentage: 25, amount: "1.25 Billion $SWG", color: "bg-purple-500" },
+    { title: "Liquidity", percentage: 15, amount: "750 Million $SWG", color: "bg-green-500" },
+    { title: "Community Rewards", percentage: 10, amount: "500 Million $SWG", color: "bg-yellow-500" },
+    { title: "Team", percentage: 10, amount: "500 Million $SWG", color: "bg-pink-500" }
   ];
 
   const howItWorks = [
     {
-      title: "Stake or Burn $SPY",
+      title: "Stake or Burn $SWG",
       points: [
-        "Burn $SPY for private sale participation, permanently removing tokens from circulation.",
-        "Stake $SPY to participate in pre-sales and Dutch auctions, earning rewards."
+        "Burn $SWG for private sale participation, permanently removing tokens from circulation.",
+        "Stake $SWG to participate in pre-sales and Dutch auctions, earning rewards."
       ]
     },
     {
@@ -113,7 +113,7 @@ export default function Whitepaper() {
     {
       title: "Earn Rewards",
       points: [
-        "$SPY staking rewards incentivize long-term commitment.",
+        "$SWG staking rewards incentivize long-term commitment.",
         "Community rewards further enrich the participant experience."
       ]
     }
@@ -182,7 +182,7 @@ export default function Whitepaper() {
             <p className="text-gray-300 leading-relaxed">
               SwingFi is a decentralized, fair-for-all crypto launchpad designed to bridge the gap 
               between retail investors and high-potential Web3 startups. By leveraging innovative 
-              staking and burning mechanisms through our native token, $SPY, SwingFi provides an 
+              staking and burning mechanisms through our native token, $SWG, SwingFi provides an 
               equitable platform where everyone has a chance to participate in token sales, fostering 
               innovation and creating opportunities for retail investors to be part of the next big 
               success stories in blockchain.
@@ -260,7 +260,7 @@ export default function Whitepaper() {
           <div className="bg-gray-800/50 rounded-xl p-6 text-center mb-8 
             hover:bg-gray-800/70 transition-all duration-300">
             <h3 className="text-2xl font-bold mb-2">Total Supply</h3>
-            <p className="text-4xl font-bold text-purple-500">5 Billion $SPY</p>
+            <p className="text-4xl font-bold text-purple-500">5 Billion $SWG</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {tokenomics.map((item, index) => (

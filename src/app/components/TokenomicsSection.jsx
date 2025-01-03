@@ -23,10 +23,10 @@ const TokenomicsSection = () => {
 
   // Token details
   const tokenDetails = [
-    { label: 'Token Symbol', value: '$SPY' },
+    { label: 'Token Symbol', value: '$SWG' },
     { label: 'Total Supply', value: '5,000,000,000' },
     { label: 'Decimals', value: '18' },
-    { label: 'ICO Allocation', value: '2,000,000,000 $SPY' },
+    { label: 'ICO Allocation', value: '2,000,000,000 $SWG' },
   ];
 
   return (

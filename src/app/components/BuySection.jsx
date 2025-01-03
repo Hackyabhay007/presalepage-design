@@ -780,7 +780,7 @@ const BuySection = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-text-secondary">You will receive:</span>
                   <span className="text-xl font-bold text-accent-400">
-                    {tokenAmount} $SPY
+                    {tokenAmount} $SWG
                   </span>
                 </div>
               </motion.div>

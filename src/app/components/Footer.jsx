@@ -64,8 +64,8 @@ const Footer = () => {
               whileHover={{ scale: 1.05 }}
             >
                <Image 
-                                   src="https://SwingFi.org/_next/static/media/Logo.4ffd2ef6.svg" 
-                                   alt="SwingFi Logo"
+                                   src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg" 
+                                   alt="SpringFi Logo"
                                    width={120}  // Increased from 100
                                    height={120}  // Increased from 40
                                    />
@@ -159,7 +159,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="py-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-muted-foreground text-sm">
-            © 2024 SwingFinance. All rights reserved.
+            © 2024 SpringFinance. All rights reserved.
           </div>
           
           <div className="flex items-center space-x-6">
