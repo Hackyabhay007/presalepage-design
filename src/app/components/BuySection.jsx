@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { WalletIcon, ArrowRightIcon, InfoIcon, CreditCard } from "lucide-react";
 import { PaymentSuccessModal } from './PaymentSuccessModal';
+import BuywithCard from './BuywithCard';
 import wagmigotchiABI from "../../../ABI/contractABI";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { parseEther } from "viem";
@@ -374,7 +375,7 @@ const BuySection = () => {
   };
 
   const { data: tokenPriceInUSDT } = useReadContract({
-    address: "0x3bFF294B158e2a809A3adC952315eF65e47B7344",
+    address: "0x95Cc97555ED334bE979ba8102cf57Ff86933A956",
     abi: abi,
     functionName: "TokenPriceInUSDT",
     watch: true
@@ -877,103 +878,21 @@ const BuySection = () => {
                     )}
                   </div>
 
+            </div>
+{/* 
+            <div className="p-6 bg-background-elevated/50 border-t border-accent-500/20">
+              <div className="flex items-start space-x-3">
+                <InfoIcon className="w-5 h-5 text-accent-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-text-secondary">
+                  Tokens will be automatically sent to your wallet after the
+                  transaction is confirmed. The exact amount may vary based on
+                  network fees and token price at the time of purchase.
                 </div>
-              </>
-            ) : (
-              // Card Payment UI
-              <div className="p-4 sm:p-6 space-y-6">
-                {/* Amount Input */}
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Amount in USD
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      placeholder="Enter amount"
-                      className="w-full bg-background/50 border border-accent-500/20 rounded-xl 
-                        px-4 py-3 text-text placeholder-text-secondary/50 focus:outline-none 
-                        focus:border-accent-500 transition-colors"
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary">
-                      USD
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card Details */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-2">
-                      Card Number
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      className="w-full bg-background/50 border border-accent-500/20 rounded-xl 
-                        px-4 py-3 text-text placeholder-text-secondary/50 focus:outline-none 
-                        focus:border-accent-500 transition-colors"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-2">
-                        Expiry Date
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="MM/YY"
-                        className="w-full bg-background/50 border border-accent-500/20 rounded-xl 
-                          px-4 py-3 text-text placeholder-text-secondary/50 focus:outline-none 
-                          focus:border-accent-500 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-2">
-                        CVV
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        className="w-full bg-background/50 border border-accent-500/20 rounded-xl 
-                          px-4 py-3 text-text placeholder-text-secondary/50 focus:outline-none 
-                          focus:border-accent-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Token Amount Display */}
-                <motion.div
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="bg-accent-500/5 border border-accent-500/20 rounded-xl p-4"
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="text-text-secondary">You will receive:</span>
-                    <span className="text-xl font-bold text-accent-400">
-                      {tokenAmount} $SWG
-                    </span>
-                  </div>
-                </motion.div>
-
-                {/* Pay Button */}
-                <motion.button
-                  className="w-full px-6 py-4 bg-accent-500 text-white rounded-xl 
-                    hover:bg-accent-600 flex items-center justify-center space-x-2 
-                    font-medium text-lg disabled:opacity-50"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span>Pay with Card</span>
-                  <ArrowRightIcon className="w-5 h-5" />
-                </motion.button>
               </div>
-            )}
+            </div> */}
           </div>
         </motion.div>
-      </div>
-      
+        </div>
       <PaymentSuccessModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
