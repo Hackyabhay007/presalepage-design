@@ -64,7 +64,7 @@ const Footer = () => {
               whileHover={{ scale: 1.05 }}
             >
                <Image 
-                                   src="https://springfi.org/_next/static/media/Logo.4ffd2ef6.svg" 
+                                   src="https://springfi.org/_next/static/media/Logo.781201c2.svg" 
                                    alt="SpringFi Logo"
                                    width={120}  // Increased from 100
                                    height={120}  // Increased from 40

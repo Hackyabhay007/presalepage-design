@@ -122,7 +122,7 @@ export default function CyberNavbar() {
                     className="relative" // Increased from w-10 h-10
                     >
                       <Image 
-                      src="https://SwingFi.org/_next/static/media/Logo.4ffd2ef6.svg" 
+                      src="https://springfi.org/_next/static/media/Logo.781201c2.svg" 
                       alt="SwingFi Logo"
                       width={120}  // Increased from 100
                       height={90}  // Increased from 40
