@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { WalletIcon, ArrowRightIcon, InfoIcon } from "lucide-react";
 import { PaymentSuccessModal } from './PaymentSuccessModal';
+import BuywithCard from './BuywithCard';
 import wagmigotchiABI from "../../../ABI/contractABI";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { parseEther } from "viem";
@@ -373,7 +374,7 @@ const BuySection = () => {
   };
 
   const { data: tokenPriceInUSDT } = useReadContract({
-    address: "0x3bFF294B158e2a809A3adC952315eF65e47B7344",
+    address: "0x95Cc97555ED334bE979ba8102cf57Ff86933A956",
     abi: abi,
     functionName: "TokenPriceInUSDT",
     watch: true
@@ -844,6 +845,12 @@ const BuySection = () => {
                 )}
               </div>
 
+              <div className="flex flex-col gap-6">
+                <div className="mt-8 p-6 bg-background-elevated rounded-lg border border-accent-500/20">
+                  <h3 className="text-xl font-semibold mb-4">Buy with Card</h3>
+                  <BuywithCard onSuccess={() => setShowSuccessModal(true)} />
+                </div>
+              </div>
             </div>
 {/* 
             <div className="p-6 bg-background-elevated/50 border-t border-accent-500/20">

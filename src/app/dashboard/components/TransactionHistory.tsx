@@ -15,7 +15,7 @@ interface Transaction {
   hash: string;
 }
 
-const CONTRACT_ADDRESS = "0x3bFF294B158e2a809A3adC952315eF65e47B7344".toLowerCase();
+const CONTRACT_ADDRESS = "0x95Cc97555ED334bE979ba8102cf57Ff86933A956".toLowerCase();
 const GETBLOCK_ENDPOINT = process.env.NEXT_PUBLIC_GETBLOCK_ENDPOINT;
 
 // ABI fragments for events
