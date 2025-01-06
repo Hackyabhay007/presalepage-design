@@ -724,14 +724,13 @@ const BuySection = () => {
 
             {paymentMethod === 'crypto' ? (
               // Existing Crypto Payment UI
-              <>
+              <div>
                 {/* Network Selection */}
                 <div className="p-4 sm:p-6 border-b border-accent-500/20">
                   <label className="text-sm sm:text-base font-medium text-gray-300 mb-3 block">
                     Select Network
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {/* ...existing network buttons... */}
                     {Object.entries(networks).map(([id, network]) => (
                       <button
                         key={id}
@@ -748,41 +747,29 @@ const BuySection = () => {
                     ))}
                   </div>
                 </div>
-
-                <div className="p-6 border-b border-accent-500/20">
-                  <label className="block text-sm font-medium text-text-secondary mb-3">
-                    Select Token
-                  </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {networks[selectedNetwork].tokens.map((token) => (
-                      <motion.button
-                        key={token.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setSelectedToken(token.symbol)}
-                        className={`relative rounded-xl p-4 border transition-all duration-200
-                          ${
-                            selectedToken === token.symbol
-                              ? "border-accent-500 bg-accent-500/10"
-                              : "border-accent-500/20 hover:border-accent-500/40"
-                          }`}
-                      >
-                        <div className="flex items-center justify-center space-x-2">
-                          <img
-                            src={`${token.icon}`}
-                            alt={token.symbol}
-                            className="w-6 h-6"
-                          />
-                          <span className="text-text font-medium">
-                            {token.symbol}
-                          </span>
-                        </div>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="p-6 space-y-6">
+                  {/* Token selection and amount input */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-3">
+                      Select Token
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {networks[selectedNetwork].tokens.map((token) => (
+                        <button
+                          key={token.id}
+                          onClick={() => setSelectedToken(token.symbol)}
+                          className={`flex-1 flex items-center justify-center space-x-3 px-6 py-4 rounded-xl border transition-all duration-200 ${
+                            selectedToken === token.symbol
+                              ? 'border-accent-500 bg-accent-500/20'
+                              : 'border-gray-700 hover:border-accent-500/50 hover:bg-accent-500/10'
+                          }`}
+                        >
+                          <img src={token.icon} alt={token.name} className="w-8 h-8" />
+                          <span className="text-lg font-medium">{token.symbol}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-text-secondary mb-3">
                       Enter Amount
@@ -820,7 +807,23 @@ const BuySection = () => {
                   </motion.div>
 
                   <div className="w-full max-w-md mx-auto space-y-4">
-                    {isConnected && selectedToken === "USDT" && !isUSDTApproved && (
+                    {!isConnected ? (
+                      <div className="flex justify-center">
+                        <ConnectButton.Custom>
+                          {({ account, chain, connect, isLoading, mounted }) => (
+                            <button
+                              className="w-full px-6 py-4 bg-accent-500/10 border border-accent-500/20 hover:bg-accent-500/20
+                                text-text-secondary font-medium text-lg transition-colors rounded-xl flex items-center justify-center"
+                              onClick={connect}
+                              disabled={isLoading}
+                            >
+                              <WalletIcon className="w-5 h-5 mr-2" />
+                              {mounted && account ? `${account.address}` : ` Wallet not connected`}
+                            </button>
+                          )}
+                        </ConnectButton.Custom>
+                      </div>
+                    ) : selectedToken === "USDT" && !isUSDTApproved ? (
                       <motion.button
                         className="w-full px-6 py-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 
                         flex items-center justify-center space-x-2 font-medium text-lg disabled:opacity-50"
@@ -837,9 +840,7 @@ const BuySection = () => {
                           </>
                         )}
                       </motion.button>
-                    )}
-
-                    {isConnected && (selectedToken !== "USDT" || isUSDTApproved) && (
+                    ) : (
                       <motion.button
                         className="w-full px-6 py-4 bg-accent-500 text-white rounded-xl 
                         hover:bg-accent-600 flex items-center justify-center space-x-2 
@@ -858,41 +859,15 @@ const BuySection = () => {
                         )}
                       </motion.button>
                     )}
-
-                    {!isConnected && (
-                      <div className="flex justify-center">
-                        <ConnectButton.Custom>
-                          {({ account, chain, connect, isLoading, mounted }) => (
-                            <button
-                              className="w-full px-6 py-4 bg-accent-500/10 border border-accent-500/20 hover:bg-accent-500/20
-                                text-text-secondary font-medium text-lg transition-colors rounded-xl flex items-center justify-center"
-                              onClick={connect}
-                              disabled={isLoading}
-                            >
-                              <WalletIcon className="w-5 h-5 mr-2" />
-                              {mounted && account ? `${account.address}` : ` Wallet not connected`}
-                            </button>
-                          )}
-                        </ConnectButton.Custom>
-                      </div>
-                    )}
                   </div>
-
-            </div>
-{/* 
-            <div className="p-6 bg-background-elevated/50 border-t border-accent-500/20">
-              <div className="flex items-start space-x-3">
-                <InfoIcon className="w-5 h-5 text-accent-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-text-secondary">
-                  Tokens will be automatically sent to your wallet after the
-                  transaction is confirmed. The exact amount may vary based on
-                  network fees and token price at the time of purchase.
                 </div>
               </div>
-            </div> */}
+            ) : (
+              <BuywithCard />
+            )}
           </div>
         </motion.div>
-        </div>
+      </div>
       <PaymentSuccessModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
