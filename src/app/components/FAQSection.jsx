@@ -142,8 +142,8 @@ const FAQSection = () => {
           ))}
         </div>
 
-        {/* Support Card */}
-        <motion.div
+     {/* Support Card */}
+     <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -156,14 +156,17 @@ const FAQSection = () => {
             <p className="text-muted-foreground mb-6">
               Can't find the answer you're looking for? Reach out to our support team.
             </p>
-            <button className="inline-flex items-center space-x-2 bg-accent 
-              hover:bg-accent/90 text-white px-6 py-3 rounded-full 
-              transition-colors duration-300"
+            <a
+              href="mailto:contact@swingfi.org"
+              className="inline-flex items-center space-x-2 bg-accent 
+                hover:bg-accent/90 text-white px-6 py-3 rounded-full 
+                transition-colors duration-300"
+              aria-label="Contact Support"
+              role="button"
             >
               <MessageCircle className="w-5 h-5" />
-              <span>contact@swingfi.com
-              </span>
-            </button>
+              <span>contact@swingfi.org</span>
+            </a>
           </div>
         </motion.div>
       </div>

@@ -42,7 +42,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-[#0D0D0D] text-white`}>
        
-        <main className="min-h-screen pt-16 max-w-[1440px] mx-auto px-4 md:px-6">
+        <main className="min-h-screen  max-w-[1440px] mx-auto">
           {children}
         </main>
       </body>

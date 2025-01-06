@@ -29,15 +29,19 @@ const PresaleHero = () => {
               <TimerIcon className="w-4 h-4 text-accent-400" />
               <span className="text-sm text-accent-400">Stage 1 Presale Live</span>
             </motion.div>
-
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 
-              text-transparent bg-clip-text">
-                Don't Miss Out on
-              </span>
-              <br />
-              <span className="text-text">The Next Big Thing</span>
-            </h1>
+  <span className="bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 
+  text-transparent bg-clip-text">
+    Bringing Back The 
+  </span>
+  <span className="text-text">
+    <span className="text-white"> ICO</span> 
+    <span className="bg-gradient-to-r from-accent-400 to-secondary-400 
+    text-transparent bg-clip-text"> Era</span>
+  </span>
+</h1>
+
+
 
             {/* Presale Progress */}
             <div className="max-w-md mx-auto lg:mx-0 mb-8">

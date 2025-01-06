@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { WalletIcon, ArrowRightIcon, InfoIcon } from "lucide-react";
+import { WalletIcon, ArrowRightIcon, InfoIcon, CreditCard } from "lucide-react";
 import { PaymentSuccessModal } from './PaymentSuccessModal';
 import BuywithCard from './BuywithCard';
 import wagmigotchiABI from "../../../ABI/contractABI";
@@ -354,6 +354,7 @@ const BuySection = () => {
   const [tokenAmount, setTokenAmount] = useState("0");
   const [isSuccess, setIsSuccess] = useState(false);
   const [prices, setPrices] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState('crypto');
 
   console.log(selectedNetwork, selectedToken, amount, tokenAmount);
 
@@ -677,180 +678,206 @@ const BuySection = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-background py-20">
+    <div className="relative min-h-screen bg-background py-6 sm:py-12 md:py-20">
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto"
+          className="max-w-3xl mx-auto"
         >
-          <div
-            id="#buy"
-            className="bg-background-elevated/50 backdrop-blur-xl rounded-3xl 
-            border border-accent-500/20 shadow-2xl overflow-hidden"
-          >
-            <div className="p-6 border-b border-accent-500/20">
-              <h2 className="text-2xl font-bold text-text">Buy Tokens</h2>
-              <p className="text-text-secondary mt-1">
-                Select network and token to continue
+          <div className="bg-background-elevated/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl 
+            border border-accent-500/20 shadow-2xl overflow-hidden">
+            
+            {/* Header */}
+            <div className="p-4 sm:p-6 border-b border-accent-500/20">
+              <h2 className="text-xl sm:text-2xl font-bold text-text">Buy Tokens</h2>
+              <p className="text-sm sm:text-base text-text-secondary mt-1">
+                Select payment method and continue
               </p>
             </div>
 
-            <div className="flex flex-col space-y-3 mb-6 p-6">
-              <label className="text-base font-medium text-gray-300">Select Network</label>
-              <div className="flex space-x-4">
-                {Object.entries(networks).map(([id, network]) => (
-                  <button
-                    key={id}
-                    onClick={() => handleNetworkChange(id)}
-                    className={`flex-1 flex items-center justify-center space-x-3 px-6 py-4 rounded-xl border transition-all duration-200 ${
-                      selectedNetwork === id
-                        ? 'border-accent-500 bg-accent-500/20'
-                        : 'border-gray-700 hover:border-accent-500/50 hover:bg-accent-500/10'
-                    }`}
-                  >
-                    <img src={network.icon} alt={network.name} className="w-8 h-8" />
-                    <span className="text-lg font-medium">{network.name}</span>
-                  </button>
-                ))}
+            {/* Payment Method Tabs */}
+            <div className="p-4 sm:p-6 border-b border-accent-500/20">
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setPaymentMethod('crypto')}
+                  className={`flex items-center justify-center space-x-2 p-4 rounded-xl border transition-all duration-200
+                    ${paymentMethod === 'crypto' 
+                      ? 'border-accent-500 bg-accent-500/20' 
+                      : 'border-accent-500/20 hover:border-accent-500/40'}`}
+                >
+                  <WalletIcon className="w-5 h-5" />
+                  <span>Crypto</span>
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('card')}
+                  className={`flex items-center justify-center space-x-2 p-4 rounded-xl border transition-all duration-200
+                    ${paymentMethod === 'card' 
+                      ? 'border-accent-500 bg-accent-500/20' 
+                      : 'border-accent-500/20 hover:border-accent-500/40'}`}
+                >
+                  <CreditCard className="w-5 h-5" />
+                  <span>Card</span>
+                </button>
               </div>
             </div>
 
-            <div className="p-6 border-b border-accent-500/20">
-              <label className="block text-sm font-medium text-text-secondary mb-3">
-                Select Token
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                {networks[selectedNetwork].tokens.map((token) => (
-                  <motion.button
-                    key={token.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedToken(token.symbol)}
-                    className={`relative rounded-xl p-4 border transition-all duration-200
-                      ${
-                        selectedToken === token.symbol
-                          ? "border-accent-500 bg-accent-500/10"
-                          : "border-accent-500/20 hover:border-accent-500/40"
-                      }`}
-                  >
-                    <div className="flex items-center justify-center space-x-2">
-                      <img
-                        src={`${token.icon}`}
-                        alt={token.symbol}
-                        className="w-6 h-6"
+            {paymentMethod === 'crypto' ? (
+              // Existing Crypto Payment UI
+              <>
+                {/* Network Selection */}
+                <div className="p-4 sm:p-6 border-b border-accent-500/20">
+                  <label className="text-sm sm:text-base font-medium text-gray-300 mb-3 block">
+                    Select Network
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* ...existing network buttons... */}
+                    {Object.entries(networks).map(([id, network]) => (
+                      <button
+                        key={id}
+                        onClick={() => handleNetworkChange(id)}
+                        className={`flex-1 flex items-center justify-center space-x-3 px-6 py-4 rounded-xl border transition-all duration-200 ${
+                          selectedNetwork === id
+                            ? 'border-accent-500 bg-accent-500/20'
+                            : 'border-gray-700 hover:border-accent-500/50 hover:bg-accent-500/10'
+                        }`}
+                      >
+                        <img src={network.icon} alt={network.name} className="w-8 h-8" />
+                        <span className="text-lg font-medium">{network.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-6 border-b border-accent-500/20">
+                  <label className="block text-sm font-medium text-text-secondary mb-3">
+                    Select Token
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {networks[selectedNetwork].tokens.map((token) => (
+                      <motion.button
+                        key={token.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedToken(token.symbol)}
+                        className={`relative rounded-xl p-4 border transition-all duration-200
+                          ${
+                            selectedToken === token.symbol
+                              ? "border-accent-500 bg-accent-500/10"
+                              : "border-accent-500/20 hover:border-accent-500/40"
+                          }`}
+                      >
+                        <div className="flex items-center justify-center space-x-2">
+                          <img
+                            src={`${token.icon}`}
+                            alt={token.symbol}
+                            className="w-6 h-6"
+                          />
+                          <span className="text-text font-medium">
+                            {token.symbol}
+                          </span>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-3">
+                      Enter Amount
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={amount}
+                        onChange={(e) => {
+                          setAmount(e.target.value);
+                          setTokenAmount(calculateTokens(e.target.value));
+                        }}
+                        placeholder={`Enter ${selectedToken} amount`}
+                        className="w-full bg-background/50 border border-accent-500/20 rounded-xl 
+                          px-4 py-3 text-text placeholder-text-secondary/50 focus:outline-none 
+                          focus:border-accent-500 transition-colors"
                       />
-                      <span className="text-text font-medium">
-                        {token.symbol}
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary">
+                        {selectedToken}
+                      </div>
+                    </div>
+                  </div>
+
+                  <motion.div
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="bg-accent-500/5 border border-accent-500/20 rounded-xl p-4"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-text-secondary">You will receive:</span>
+                      <span className="text-xl font-bold text-accent-400">
+                        {tokenAmount} $SWG
                       </span>
                     </div>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
+                  </motion.div>
 
-            <div className="p-6 space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-3">
-                  Enter Amount
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => {
-                      setAmount(e.target.value);
-                      setTokenAmount(calculateTokens(e.target.value));
-                    }}
-                    placeholder={`Enter ${selectedToken} amount`}
-                    className="w-full bg-background/50 border border-accent-500/20 rounded-xl 
-                      px-4 py-3 text-text placeholder-text-secondary/50 focus:outline-none 
-                      focus:border-accent-500 transition-colors"
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary">
-                    {selectedToken}
-                  </div>
-                </div>
-              </div>
-
-              <motion.div
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="bg-accent-500/5 border border-accent-500/20 rounded-xl p-4"
-              >
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary">You will receive:</span>
-                  <span className="text-xl font-bold text-accent-400">
-                    {tokenAmount} $SWG
-                  </span>
-                </div>
-              </motion.div>
-
-              <div className="w-full max-w-md mx-auto space-y-4">
-                {isConnected && selectedToken === "USDT" && !isUSDTApproved && (
-                  <motion.button
-                    className="w-full px-6 py-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 
-                    flex items-center justify-center space-x-2 font-medium text-lg disabled:opacity-50"
-                    onClick={handleApproveUSDT}
-                    disabled={isApproveLoading}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {isApproveLoading ? (
-                      <span>Approving USDT...</span>
-                    ) : (
-                      <>
-                        <span>Approve USDT</span>
-                        <ArrowRightIcon className="w-5 h-5" />
-                      </>
+                  <div className="w-full max-w-md mx-auto space-y-4">
+                    {isConnected && selectedToken === "USDT" && !isUSDTApproved && (
+                      <motion.button
+                        className="w-full px-6 py-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 
+                        flex items-center justify-center space-x-2 font-medium text-lg disabled:opacity-50"
+                        onClick={handleApproveUSDT}
+                        disabled={isApproveLoading}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {isApproveLoading ? (
+                          <span>Approving USDT...</span>
+                        ) : (
+                          <>
+                            <span>Approve USDT</span>
+                            <ArrowRightIcon className="w-5 h-5" />
+                          </>
+                        )}
+                      </motion.button>
                     )}
-                  </motion.button>
-                )}
 
-                {isConnected && (selectedToken !== "USDT" || isUSDTApproved) && (
-                  <motion.button
-                    className="w-full px-6 py-4 bg-accent-500 text-white rounded-xl 
-                    hover:bg-accent-600 flex items-center justify-center space-x-2 
-                    font-medium text-lg disabled:opacity-50"
-                    onClick={handleselectTokenPayment}
-                    disabled={!amount || isBuyLoading}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {isBuyLoading ? (
-                      <span>Processing...</span>
-                    ) : (
-                      <>
-                        <span>Buy with {selectedToken}</span>
-                        <ArrowRightIcon className="w-5 h-5" />
-                      </>
+                    {isConnected && (selectedToken !== "USDT" || isUSDTApproved) && (
+                      <motion.button
+                        className="w-full px-6 py-4 bg-accent-500 text-white rounded-xl 
+                        hover:bg-accent-600 flex items-center justify-center space-x-2 
+                        font-medium text-lg disabled:opacity-50"
+                        onClick={handleselectTokenPayment}
+                        disabled={!amount || isBuyLoading}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {isBuyLoading ? (
+                          <span>Processing...</span>
+                        ) : (
+                          <>
+                            <span>Buy with {selectedToken}</span>
+                            <ArrowRightIcon className="w-5 h-5" />
+                          </>
+                        )}
+                      </motion.button>
                     )}
-                  </motion.button>
-                )}
 
-                {!isConnected && (
-                  <div className="flex justify-center">
-                    <ConnectButton.Custom>
-                      {({ account, chain, connect, isLoading, mounted }) => (
-                        <button
-                          className="w-full px-6 py-4 bg-accent-500/10 border border-accent-500/20 hover:bg-accent-500/20
-                            text-text-secondary font-medium text-lg transition-colors rounded-xl flex items-center justify-center"
-                          onClick={connect}
-                          disabled={isLoading}
-                        >
-                          <WalletIcon className="w-5 h-5 mr-2" />
-                          {mounted && account ? `${account.address}` : ` Wallet not connected`}
-                        </button>
-                      )}
-                    </ConnectButton.Custom>
+                    {!isConnected && (
+                      <div className="flex justify-center">
+                        <ConnectButton.Custom>
+                          {({ account, chain, connect, isLoading, mounted }) => (
+                            <button
+                              className="w-full px-6 py-4 bg-accent-500/10 border border-accent-500/20 hover:bg-accent-500/20
+                                text-text-secondary font-medium text-lg transition-colors rounded-xl flex items-center justify-center"
+                              onClick={connect}
+                              disabled={isLoading}
+                            >
+                              <WalletIcon className="w-5 h-5 mr-2" />
+                              {mounted && account ? `${account.address}` : ` Wallet not connected`}
+                            </button>
+                          )}
+                        </ConnectButton.Custom>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="mt-8 p-6 bg-background-elevated rounded-lg border border-accent-500/20">
-                  <h3 className="text-xl font-semibold mb-4">Buy with Card</h3>
-                  <BuywithCard onSuccess={() => setShowSuccessModal(true)} />
-                </div>
-              </div>
             </div>
 {/* 
             <div className="p-6 bg-background-elevated/50 border-t border-accent-500/20">
@@ -867,14 +894,12 @@ const BuySection = () => {
         </motion.div>
         </div>
       <PaymentSuccessModal
-              isOpen={showSuccessModal}
-              onClose={() => setShowSuccessModal(false)}
-              transactionHash={transactionData.hash}
-              tokenAmount={transactionData.amount}
-              tokenSymbol={transactionData.symbol}
-            />
-
-    
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        transactionHash={transactionData.hash}
+        tokenAmount={transactionData.amount}
+        tokenSymbol={transactionData.symbol}
+      />
     </div>
   );
 }
