@@ -1,5 +1,21 @@
 // components/TransactionDetailsModal.tsx
 import { motion, AnimatePresence } from 'framer-motion';
+
+interface Transaction {
+  id: string;
+  status: 'pending' | 'successful' | 'failed';
+  fiatAmount: number;
+  cryptoAmount: number;
+  cryptoType: string;
+  paymentMethod: string;
+  tokenPrice: number;
+  network: string;
+  userWallet: string;
+  wertData?: {
+    signatureValid: boolean;
+    orderId: string;
+  };
+}
 import { 
   X, 
   ExternalLink, 
@@ -197,7 +213,7 @@ export function TransactionDetailsModal({
                       <div className="flex items-center space-x-2">
                         <span className="font-mono">{transaction.wertData.orderId}</span>
                         <button
-                          onClick={() => copyToClipboard(transaction.wertData.orderId, 'orderId')}
+                          onClick={() => transaction.wertData && copyToClipboard(transaction.wertData.orderId, 'orderId')}
                           className="p-1 hover:bg-accent/10 rounded-md transition-colors"
                         >
                           {copied === 'orderId'
