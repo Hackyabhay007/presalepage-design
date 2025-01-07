@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Navbar from '@/app/components/navigation/Navbar'
+import { headers } from 'next/headers'
+import ContextProvider from '../context'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     siteName: 'SwingFi',
     images: [
       {
-        url: 'https://SwingFi.org/og-image.png', // Make sure to add your actual OG image path
+        url: 'https://springfi.org/_next/static/media/Logo.781201c2.svg', // Make sure to add your actual OG image path
         width: 1200,
         height: 630,
       },
@@ -33,18 +34,22 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
-  children,
-}: {
+export default async function RootLayout({
+  children
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
+  const headersObj = await headers();
+  const cookies = headersObj.get('cookie')
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-[#0D0D0D] text-white`}>
-       
-        <main className="min-h-screen  max-w-[1440px] mx-auto">
-          {children}
-        </main>
+        <ContextProvider cookies={cookies}>
+          <main className="min-h-screen max-w-[1440px] mx-auto">
+            {children}
+          </main>
+        </ContextProvider>
       </body>
     </html>
   )

@@ -24,6 +24,9 @@ import {
 } from 'lucide-react';
 
 import Image from 'next/image'
+import { useAppKit } from '@reown/appkit/react';
+import { useAppKitAccount } from '@reown/appkit/react';
+import { useAppKitWallet } from '@reown/appkit-wallet-button/react';
 
 const menuItems = [
   { name: 'Buy', href: '#buy', icon: Gem },
@@ -42,18 +45,31 @@ const menuItems = [
 export default function CyberNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  
+  // Replace wallet state with AppKit hooks
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
+  const { isPending, connect } = useAppKitWallet({
+    onSuccess() {
+      console.log('Wallet connected successfully');
+    },
+    onError(error) {
+      console.error('Wallet connection error:', error);
+    }
+  });
 
-  const connectWallet = async () => {
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setWalletAddress(accounts[0]);
-        setIsWalletConnected(true);
-      } catch (error) {
-        console.error('Error connecting wallet:', error);
-      }
+  // Helper function to format address
+  const formatAddress = (addr) => {
+    if (!addr) return '';
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  // Handle wallet connection
+  const handleConnect = async () => {
+    if (isConnected) {
+      open({ view: 'Account' });
+    } else {
+      open({ view: 'Connect' });
     }
   };
 
@@ -86,6 +102,24 @@ export default function CyberNavbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Update the wallet button JSX in both desktop and mobile views
+  const WalletButton = () => (
+    <button
+      onClick={handleConnect}
+      disabled={isPending}
+      className="flex items-center space-x-2 px-4 py-2 rounded-xl
+        bg-gradient-to-r from-secondary-600/20 to-accent-600/20
+        hover:from-secondary-600/30 hover:to-accent-600/30
+        border border-accent-400/20"
+    >
+      <Wallet className="w-4 h-4 text-accent-400" />
+      <span className="text-accent-400">
+        {isPending ? 'Connecting...' : 
+         isConnected ? formatAddress(address) : 'Connect Wallet'}
+      </span>
+    </button>
+  );
 
   return (
     <motion.nav
@@ -154,18 +188,7 @@ export default function CyberNavbar() {
                 <span>{item.name}</span>
               </a>
             ))}
-            <button
-              onClick={connectWallet}
-              className="flex items-center space-x-2 px-4 py-2 rounded-xl
-                bg-gradient-to-r from-secondary-600/20 to-accent-600/20
-                hover:from-secondary-600/30 hover:to-accent-600/30
-                border border-accent-400/20"
-            >
-              <Wallet className="w-4 h-4 text-accent-400" />
-              <span className="text-accent-400">
-                {isWalletConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
-              </span>
-            </button>
+            <WalletButton />
           </div>
 
           {/* Mobile Menu Button */}
@@ -236,21 +259,7 @@ export default function CyberNavbar() {
                 </motion.div>
               ))}
               
-              <motion.button
-                onClick={connectWallet}
-                initial={{ y: 20, opacity: 0 }} 
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 20, opacity: 0 }}
-                className="w-full px-4 py-3 mt-4 rounded-xl
-                  bg-gradient-to-r from-secondary-600/20 to-accent-600/20
-                  hover:from-secondary-600/30 hover:to-accent-600/30
-                  border border-accent-400/20 flex items-center justify-center space-x-2"
-              >
-                <Wallet className="w-4 h-4 text-accent-400" />
-                <span className="text-accent-400">
-                  {isWalletConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
-                </span>
-              </motion.button>
+              <WalletButton />
             </div>
           </motion.div>
         )}
