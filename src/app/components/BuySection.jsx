@@ -257,17 +257,18 @@ const abi = [
 // Network configurations
 const networks = {
   eth: {
-    name: "Sepolia",
+    name: "ethereum",
     symbol: "ETH",
     icon: "https://cryptologos.cc/logos/ethereum-eth-logo.svg",
+    usdtAddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     tokens: [
       {
         id: "eth",
         symbol: "ETH",
         icon: "https://cryptologos.cc/logos/ethereum-eth-logo.svg",
         decimals: 18,
-        minAmount: 0.01,
-        maxAmount: 10,
+        minAmount: 0.000001,
+        maxAmount: 100000,
         coingeckoId: "ethereum",
         price: 0
       },
@@ -282,14 +283,15 @@ const networks = {
         price: 1
       },
     ],
-    chainId: 11155111,
-    rpcUrl: "https://eth-sepolia.g.alchemy.com/v2/demo",
-    explorerUrl: "https://sepolia.etherscan.io",
+    chainId: 1,
+    rpcUrl: "https://rpc.flashbots.net",
+    explorerUrl: "https://etherscan.io",
   },
   bsc: {
     name: "BSC",
     symbol: "BNB",
     icon: "https://cryptologos.cc/logos/bnb-bnb-logo.svg",
+    usdtAddress: "0x55d398326f99059fF775485246999027B3197955",
     tokens: [
       {
         id: "bnb",
@@ -320,6 +322,7 @@ const networks = {
     name: "Polygon",
     symbol: "MATIC",
     icon: "https://cryptologos.cc/logos/polygon-matic-logo.svg",
+    usdtAddress: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
     tokens: [
       {
         id: "matic",
@@ -545,7 +548,10 @@ const BuySection = () => {
     
     try {
       console.log("Starting USDT approval...");
-      const usdtAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+      const usdtAddress = networks[selectedNetwork].usdtAddress;
+      if (!usdtAddress) {
+        throw new Error("USDT address not found for selected network");
+      }
       const spenderAddress = "0xC414436B424318808069A9ec5B65C52A7523c743";
       const maxApproval = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
