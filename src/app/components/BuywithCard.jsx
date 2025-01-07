@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import WertWidget from '@wert-io/widget-initializer';
 import { v4 as uuidv4 } from 'uuid';
 import { Buffer } from 'buffer/';
 

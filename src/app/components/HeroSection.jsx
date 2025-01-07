@@ -1,8 +1,52 @@
 'use client';
 import { motion } from 'framer-motion';
 import { TimerIcon, ChevronDownIcon, AlertCircleIcon, CheckCircle2Icon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const PresaleHero = () => {
+  // Timer state and logic
+  const [timeLeft, setTimeLeft] = useState({
+    days: 4,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 4);
+      let difference = endDate - now;
+
+      // Reset timer if it reaches 0
+      if (difference < 0) {
+        endDate.setDate(endDate.getDate() + 4);
+        difference = endDate - now;
+      }
+
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((difference % (1000 * 60)) / 1000)
+      };
+    };
+
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Price constants
+  const stage1Price = 0.001;
+  const stage2Price = 0.00125;
+  const ethPrice = 2200; // Example ETH price in USD, you might want to fetch this dynamically
+  const stage1USD = (stage1Price * ethPrice).toFixed(2);
+  const stage2USD = (stage2Price * ethPrice).toFixed(2);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       {/* Animated Background Elements */}
@@ -46,8 +90,8 @@ const PresaleHero = () => {
             {/* Presale Progress */}
             <div className="max-w-md mx-auto lg:mx-0 mb-8">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-text-secondary">Raised: 1,250 ETH</span>
-                <span className="text-accent-400">Target: 2,000 ETH</span>
+                <span className="text-text-secondary">STATE 1</span>
+                <span className="text-accent-400">STAGE 2</span>
               </div>
               <div className="h-3 bg-background-elevated rounded-full overflow-hidden">
                 <motion.div
@@ -62,10 +106,10 @@ const PresaleHero = () => {
             {/* Timer */}
             <div className="grid grid-cols-4 gap-4 max-w-md mx-auto lg:mx-0 mb-8">
               {[
-                { value: '14', label: 'Days' },
-                { value: '22', label: 'Hours' },
-                { value: '45', label: 'Minutes' },
-                { value: '30', label: 'Seconds' },
+                { value: timeLeft.days.toString().padStart(2, '0'), label: 'Days' },
+                { value: timeLeft.hours.toString().padStart(2, '0'), label: 'Hours' },
+                { value: timeLeft.minutes.toString().padStart(2, '0'), label: 'Minutes' },
+                { value: timeLeft.seconds.toString().padStart(2, '0'), label: 'Seconds' },
               ].map((time, index) => (
                 <motion.div
                   key={index}
@@ -149,8 +193,10 @@ const PresaleHero = () => {
                 className="absolute -top-8 -right-8 bg-accent-500/10 backdrop-blur-xl 
                 border border-accent-500/20 rounded-xl p-4 shadow-xl"
               >
-                <div className="text-sm font-medium text-accent-400">Current Price</div>
+                <div className="text-sm font-medium text-accent-400">Stage 1 Price</div>
                 <div className="text-xl font-bold text-text">1 ETH = 50,000 TOKEN</div>
+                <div className="text-sm text-accent-400">${stage1USD} per token</div>
+                <div className="text-sm text-accent-400">Raise: 50K</div>
               </motion.div>
 
               <motion.div
@@ -166,8 +212,10 @@ const PresaleHero = () => {
                 className="absolute -bottom-8 -left-8 bg-secondary-500/10 backdrop-blur-xl 
                 border border-secondary-500/20 rounded-xl p-4 shadow-xl"
               >
-                <div className="text-sm font-medium text-secondary-400">Next Stage Price</div>
+                <div className="text-sm font-medium text-secondary-400">Stage 2 Price</div>
                 <div className="text-xl font-bold text-text">1 ETH = 40,000 TOKEN</div>
+                <div className="text-sm text-secondary-400">${stage2USD} per token</div>
+                <div className="text-sm text-secondary-400">Raise: 75K</div>
               </motion.div>
             </div>
 
