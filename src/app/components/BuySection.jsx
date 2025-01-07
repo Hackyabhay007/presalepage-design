@@ -509,7 +509,7 @@ const BuySection = () => {
     try {
       setIsBuyLoading(true);
       await nativePayment({
-        address: "0xC414436B424318808069A9ec5B65C52A7523c743",
+        address: "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC",
         abi: abi,
         functionName: 'BuyWithNative',
         value: parseEther(amount),
@@ -526,7 +526,7 @@ const BuySection = () => {
     try {
       setIsBuyLoading(true);
       await USDTPAYMENT({
-        address: '0xC414436B424318808069A9ec5B65C52A7523c743',
+        address: '0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC',
         abi: abi,
         functionName: 'BuyWithUSDT',
         args: [amount],
@@ -552,7 +552,7 @@ const BuySection = () => {
       if (!usdtAddress) {
         throw new Error("USDT address not found for selected network");
       }
-      const spenderAddress = "0xC414436B424318808069A9ec5B65C52A7523c743";
+      const spenderAddress = "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC";
       const maxApproval = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
       const tx = await approveUSDT({
