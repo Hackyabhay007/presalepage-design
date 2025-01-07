@@ -13,6 +13,8 @@ import {
   useAccount,
 } from "wagmi";
 
+import { getTransactionConfirmations } from '@wagmi/core'
+
 // abi
 const abi = [
   {
@@ -468,9 +470,33 @@ const BuySection = () => {
 
   const { isConnected } = useAccount();
 
-  const { writeContract: nativepayment, isLoading: isNaivepaymentLoading } = useWriteContract();
+  const { writeContract: nativePayment, data: nativePaymentData } = useWriteContract();
   
- 
+  useEffect(() => {
+    if (nativePaymentData) {
+      console.log("Native payment transaction hash:", nativePaymentData);
+      handlePurchaseSuccess({
+        transactionHash: nativePaymentData,
+        tokenAmount: amount,
+        tokenSymbol: selectedToken
+      });
+      setIsBuyLoading(false);
+    }
+  }, [nativePaymentData]);
+
+  const { writeContract: USDTPAYMENT, data: usdtPaymentData } = useWriteContract();
+  
+  useEffect(() => {
+    if (usdtPaymentData) {
+      console.log("USDT payment transaction hash:", usdtPaymentData);
+      handlePurchaseSuccess({
+        transactionHash: usdtPaymentData,
+        tokenAmount: amount,
+        tokenSymbol: selectedToken
+      });
+      setIsBuyLoading(false);
+    }
+  }, [usdtPaymentData]);
 
   const [isUSDTApproved, setIsUSDTApproved] = useState(false);
   const [isBuyLoading, setIsBuyLoading] = useState(false);
@@ -479,22 +505,12 @@ const BuySection = () => {
     if (!amount) return;
     try {
       setIsBuyLoading(true);
-      const tx = await nativepayment({
+      await nativePayment({
         address: "0xC414436B424318808069A9ec5B65C52A7523c743",
         abi: abi,
         functionName: 'BuyWithNative',
         value: parseEther(amount),
       });
-      
-      console.log("Native Payment successful", tx);
-      
-      if (tx) {
-        handlePurchaseSuccess({
-          transactionHash: tx,
-          tokenAmount: amount,
-          tokenSymbol: selectedToken
-        });
-      }
     } catch (error) {
       console.error("Error:", error)
     } finally {
@@ -502,30 +518,16 @@ const BuySection = () => {
     }
   }
 
-  const { writeContract: USDTPAYMENT, isLoading: isUSDTPAYMENTLoading } = useWriteContract();
-  
- 
-
   const handleUSDT = async () => {
     if (!amount) return;
     try {
       setIsBuyLoading(true);
-      const tx = await USDTPAYMENT({
+      await USDTPAYMENT({
         address: '0xC414436B424318808069A9ec5B65C52A7523c743',
         abi: abi,
         functionName: 'BuyWithUSDT',
         args: [amount],
       });
-      
-      console.log("USDT Payment successful", tx);
-      
-      if (tx) {
-        handlePurchaseSuccess({
-          transactionHash: tx,
-          tokenAmount: amount,
-          tokenSymbol: selectedToken
-        });
-      }
     } catch (error) {
       console.error("Error:", error)
     } finally {
