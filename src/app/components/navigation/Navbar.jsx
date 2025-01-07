@@ -30,7 +30,7 @@ const menuItems = [
   { name: 'Vision', href: '#vision', icon: Telescope },
   { name: 'Tokenomics', href: '#tokenomics', icon: LayersIcon },
   { name: 'Roadmap', href: '#roadmap', icon: Waypoints },
-  { name: 'FAQ', href: '#faq', icon: MailQuestion },
+  { name: 'FAQ', href: '#faqss', icon: MailQuestion },
   { 
     name: 'Litepaper', 
     href: '/whitepaper', // Update this with your actual whitepaper URL

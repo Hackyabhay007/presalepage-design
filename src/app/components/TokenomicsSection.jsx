@@ -30,7 +30,7 @@ const TokenomicsSection = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-background py-20 overflow-hidden">
+    <div id='tokenomics' className="relative min-h-screen bg-background py-20 overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 bg-grid-white/[0.02]" />
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-accent-900/20" />

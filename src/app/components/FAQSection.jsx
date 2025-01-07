@@ -149,7 +149,7 @@ const FAQSection = () => {
           viewport={{ once: true }}
           className="mt-16 max-w-2xl mx-auto text-center"
         >
-          <div className="p-8 rounded-2xl border border-accent/20 bg-card/50 backdrop-blur-sm">
+          <div id='faqss' className="p-8 rounded-2xl border border-accent/20 bg-card/50 backdrop-blur-sm">
             <h3 className="text-xl font-semibold text-foreground mb-4">
               Still have questions?
             </h3>

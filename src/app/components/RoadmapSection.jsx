@@ -136,7 +136,7 @@ const RoadmapSection = () => {
   };
 
   return (
-    <div ref={containerRef} className="relative min-h-screen w-full bg-background py-20">
+    <div id='roadmap'  ref={containerRef} className="relative min-h-screen w-full bg-background py-20">
       {/* Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(var(--background),var(--background))]">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(47,47,47,.1)_1px,transparent_1px),linear-gradient(90deg,rgba(47,47,47,.1)_1px,transparent_1px)] bg-[size:24px_24px]" />

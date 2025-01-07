@@ -31,7 +31,7 @@ const VisionSection = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-background py-20 overflow-hidden">
+    <div id='vision' className="relative min-h-screen bg-background py-20 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 bg-grid-white/[0.02]" />
       <motion.div
