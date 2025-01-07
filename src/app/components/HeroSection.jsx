@@ -4,41 +4,50 @@ import { TimerIcon, ChevronDownIcon, AlertCircleIcon, CheckCircle2Icon } from 'l
 import { useState, useEffect } from 'react';
 
 const PresaleHero = () => {
-  // Timer state and logic
+  const calculateNextEndTime = () => {
+    const startTime = new Date(2025, 0, 7, 8, 52, 0); // Jan 7, 2024, 8:52 AM
+    const now = new Date();
+    const fourDaysInMs = 4 * 24 * 60 * 60 * 1000; // 4 days in milliseconds
+
+    // Check how many 4-day periods have passed
+    const periodsPassed = Math.floor((now - startTime) / fourDaysInMs);
+
+    // Calculate the next end time (add one 4-day period to the last completed period)
+    return startTime.getTime() + (periodsPassed + 1) * fourDaysInMs;
+  };
+
+  const [endTime, setEndTime] = useState(calculateNextEndTime());
   const [timeLeft, setTimeLeft] = useState({
-    days: 4,
-    hours: 0,
-    minutes: 0,
-    seconds: 0
+    days: '00',
+    hours: '00',
+    minutes: '00',
+    seconds: '00'
   });
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
+    const updateTimer = () => {
       const now = new Date().getTime();
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + 4);
-      let difference = endDate - now;
+      const distance = endTime - now;
 
-      // Reset timer if it reaches 0
-      if (difference < 0) {
-        endDate.setDate(endDate.getDate() + 4);
-        difference = endDate - now;
+      if (distance <= 0) {
+        // Set the next 4-day period
+        setEndTime(calculateNextEndTime());
+      } else {
+        setTimeLeft({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0'),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0'),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0'),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0')
+        });
       }
-
-      return {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((difference % (1000 * 60)) / 1000)
-      };
     };
 
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
+    // Update immediately and every second
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [endTime]);
 
   // Price constants
   const stage1Price = 0.001;
@@ -46,6 +55,7 @@ const PresaleHero = () => {
   const ethPrice = 2200; // Example ETH price in USD, you might want to fetch this dynamically
   const stage1USD = (stage1Price * ethPrice).toFixed(2);
   const stage2USD = (stage2Price * ethPrice).toFixed(2);
+
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
@@ -106,10 +116,10 @@ const PresaleHero = () => {
             {/* Timer */}
             <div className="grid grid-cols-4 gap-4 max-w-md mx-auto lg:mx-0 mb-8">
               {[
-                { value: timeLeft.days.toString().padStart(2, '0'), label: 'Days' },
-                { value: timeLeft.hours.toString().padStart(2, '0'), label: 'Hours' },
-                { value: timeLeft.minutes.toString().padStart(2, '0'), label: 'Minutes' },
-                { value: timeLeft.seconds.toString().padStart(2, '0'), label: 'Seconds' },
+                { value: timeLeft.days, label: 'Days' },
+                { value: timeLeft.hours, label: 'Hours' },
+                { value: timeLeft.minutes, label: 'Minutes' },
+                { value: timeLeft.seconds, label: 'Seconds' },
               ].map((time, index) => (
                 <motion.div
                   key={index}
