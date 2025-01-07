@@ -15,7 +15,7 @@ interface TokenPurchaseEvent {
   transactionHash: string;
 }
 
-const CONTRACT_ADDRESS = "0x95Cc97555ED334bE979ba8102cf57Ff86933A956".toLowerCase();
+const CONTRACT_ADDRESS = "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC".toLowerCase();
 const GETBLOCK_ENDPOINT = process.env.NEXT_PUBLIC_GETBLOCK_ENDPOINT;
 
 const EVENT_SIGNATURES = {

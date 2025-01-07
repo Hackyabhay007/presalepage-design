@@ -374,7 +374,7 @@ const BuySection = () => {
   };
 
   const { data: tokenPriceInUSDT } = useReadContract({
-    address: "0x95Cc97555ED334bE979ba8102cf57Ff86933A956",
+    address: "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC",
     abi: abi,
     functionName: "TokenPriceInUSDT",
     watch: true
