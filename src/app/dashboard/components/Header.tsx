@@ -1,77 +1,64 @@
-// components/layout/Header.tsx
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { 
-  Wallet, 
+  Shield,
   ChevronDown, 
   ExternalLink, 
   Copy, 
-  LogOut,
-  Shield
+  LogOut
 } from 'lucide-react';
-
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string }) => Promise<any>;
-      on: (event: string, callback: (accounts: string[]) => void) => void;
-      removeListener: (event: string, callback: (accounts: string[]) => void) => void;
-    };
-  }
-}
+import { useAppKit } from '@reown/appkit/react';
+import { useAppKitAccount } from '@reown/appkit/react';
+import { useAppKitWallet } from '@reown/appkit-wallet-button/react';
+import { toast } from 'sonner'; // Add this import for notifications
 
 export function Header() {
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-
-  // Handle account changes
-  useEffect(() => {
-    if (typeof window.ethereum !== 'undefined') {
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length === 0) {
-          setIsWalletConnected(false);
-          setWalletAddress('');
-        } else {
-          setWalletAddress(accounts[0]);
-          setIsWalletConnected(true);
-        }
-      };
-
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-
-      return () => {
-        if (window.ethereum) {
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        }
-      };
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
+  const { isPending } = useAppKitWallet({
+    onSuccess() {
+      console.log('Wallet connected successfully');
+      setIsConnecting(false);
+    },
+    onError(error) {
+      console.error('Wallet connection error:', error);
+      setIsConnecting(false);
+      toast.error(
+        error.message === 'Connection declined' 
+          ? 'Connection was declined. Please try again.'
+          : 'Failed to connect wallet. Please try again.'
+      );
     }
-  }, []); 
+  });
 
-  const connectWallet = async () => {
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setWalletAddress(accounts[0]);
-        setIsWalletConnected(true);
-      } catch (error) {
-        console.error('Error connecting wallet:', error);
-      }
+  const handleConnect = async () => {
+    if (isConnecting) {
+      toast.error('Please wait for the previous connection request to complete');
+      return;
+    }
+    
+    setIsConnecting(true);
+    try {
+      open({ view: 'Connect' });
+    } catch (error) {
+      setIsConnecting(false);
+      toast.error('Failed to initiate wallet connection');
     }
   };
 
-  const disconnectWallet = () => {
-    setIsWalletConnected(false);
-    setWalletAddress('');
+  const handleDisconnect = () => {
+    // Implementation will be handled by AppKit
     setIsDropdownOpen(false);
   };
 
   const copyAddress = async () => {
     try {
-      await navigator.clipboard.writeText(walletAddress);
+      await navigator.clipboard.writeText(address || '');
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
@@ -80,7 +67,9 @@ export function Header() {
   };
 
   const viewOnEtherscan = () => {
-    window.open(`https://etherscan.io/address/${walletAddress}`, '_blank');
+    if (address) {
+      window.open(`https://etherscan.io/address/${address}`, '_blank');
+    }
   };
 
   return (
@@ -120,7 +109,7 @@ export function Header() {
 
             {/* Wallet Section */}
             <div className="relative">
-              {isWalletConnected ? (
+              {isConnected ? (
                 <>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -132,7 +121,7 @@ export function Header() {
                   >
                     <Shield className="w-4 h-4" />
                     <span>
-                      {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+                      {`${address?.slice(0, 6)}...${address?.slice(-4)}`}
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-transform duration-200 
                       ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -155,7 +144,7 @@ export function Header() {
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium">
-                                {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+                                {`${address?.slice(0, 6)}...${address?.slice(-4)}`}
                               </span>
                               <div className="flex items-center space-x-2">
                                 <motion.button
@@ -196,7 +185,7 @@ export function Header() {
                           <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={disconnectWallet}
+                            onClick={handleDisconnect}
                             className="w-full px-4 py-2 rounded-lg flex items-center 
                               justify-center space-x-2 bg-red-500/10 text-red-500 
                               hover:bg-red-500/20 transition-colors"
@@ -213,12 +202,17 @@ export function Header() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={connectWallet}
-                  className="px-6 py-2 rounded-lg flex items-center space-x-2 
-                    bg-accent text-white hover:bg-accent/90 transition-colors"
+                  onClick={handleConnect}
+                  disabled={isPending || isConnecting}
+                  className="px-4 py-2 rounded-lg flex items-center space-x-2 
+                    bg-accent/10 text-accent border border-accent/20 
+                    hover:bg-accent/20 transition-all disabled:opacity-50 
+                    disabled:cursor-not-allowed"
                 >
-                  <Wallet className="w-4 h-4" />
-                  <span>Connect Wallet</span>
+                  <Shield className="w-4 h-4" />
+                  <span>
+                    {isPending || isConnecting ? 'Connecting...' : 'Connect Wallet'}
+                  </span>
                 </motion.button>
               )}
             </div>

@@ -24,7 +24,7 @@ const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,
   networks: [mainnet, bsc,polygon],
-  
+  debug: true,
   defaultNetwork: mainnet,
   metadata,
 

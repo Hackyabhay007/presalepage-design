@@ -9,9 +9,12 @@ import {
   Activity,
   DollarSign
 } from 'lucide-react';
+import { useAppKit } from '@reown/appkit/react';
+import { useAppKitAccount } from '@reown/appkit/react';
+import { useAppKitWallet } from '@reown/appkit-wallet-button/react';
+import { toast } from 'sonner';
 import BuyTokenModal from './BuyTokenModal';
 import TransactionHistory from './TransactionHistory';
-import { useAccount } from 'wagmi';
 import { supabase } from '@/lib/supabase';
 
 interface UserDeposit {
@@ -28,22 +31,30 @@ export function TokenDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [userDeposits, setUserDeposits] = useState<UserDeposit | null>(null);
   const [ethPrice, setEthPrice] = useState(0);
-  const { address, isConnected } = useAccount();
+  
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
+  const { isPending } = useAppKitWallet({
+    onError(error) {
+      console.error('Wallet connection error:', error);
+      toast.error('Failed to connect wallet. Please try again.');
+    }
+  });
+
+  const fetchEthPrice = async () => {
+    try {
+      const response = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
+      );
+      const data = await response.json();
+      setEthPrice(data.ethereum.usd);
+    } catch (error) {
+      console.error('Error fetching ETH price:', error);
+      setEthPrice(2000); // Fallback price
+    }
+  };
 
   useEffect(() => {
-    const fetchEthPrice = async () => {
-      try {
-        const response = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
-        );
-        const data = await response.json();
-        setEthPrice(data.ethereum.usd);
-      } catch (error) {
-        console.error('Error fetching ETH price:', error);
-        setEthPrice(2000); // Fallback price
-      }
-    };
-
     const fetchUserData = async () => {
       if (!isConnected || !address) {
         setIsLoading(false);
@@ -52,13 +63,11 @@ export function TokenDashboard() {
 
       try {
         setIsLoading(true);
-        // Ensure consistent case for the address
         const userAddress = address.toLowerCase();
         
         console.log('Connected wallet address:', address);
         console.log('Normalized address for query:', userAddress);
         
-        // First try exact case
         let { data: depositsData, error: fetchError } = await supabase
           .from('user_deposits')
           .select('*')
@@ -66,43 +75,25 @@ export function TokenDashboard() {
           .single();
 
         if (fetchError) {
-          console.error('Error fetching with lowercase:', fetchError);
-          
-          // Try with original case
-          const result = await supabase
-            .from('user_deposits')
-            .select('*')
-            .eq('address', address)
-            .single();
-            
-          depositsData = result.data;
-          fetchError = result.error;
-          
-          if (result.error) {
-            console.error('Error fetching with original case:', result.error);
-          }
-        }
-
-        if (fetchError) {
-          console.error('Final error fetching deposits:', fetchError);
+          console.error('Error fetching user deposits:', fetchError);
           setUserDeposits(null);
+          toast.error('Failed to fetch user deposits');
         } else {
           console.log('Found deposits:', depositsData);
           setUserDeposits(depositsData);
         }
 
-        // Fetch ETH price
         await fetchEthPrice();
       } catch (error) {
         console.error('Error in user data flow:', error);
         setUserDeposits(null);
+        toast.error('Failed to load user data');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserData();
-    // Refresh data every minute
     const interval = setInterval(fetchUserData, 60000);
     return () => clearInterval(interval);
   }, [address, isConnected]);
@@ -120,13 +111,23 @@ export function TokenDashboard() {
 
   if (!isConnected || !address) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="  flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <Wallet className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
           <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-4">
             Connect your wallet to view your dashboard and transaction history
           </p>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => open({ view: 'Connect' })}
+            disabled={isPending}
+            className="px-6 py-2 rounded-lg bg-accent text-white 
+              hover:bg-accent/90 transition-colors disabled:opacity-50"
+          >
+            {isPending ? 'Connecting...' : 'Connect Wallet'}
+          </motion.button>
         </div>
       </div>
     );
