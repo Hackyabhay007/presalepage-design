@@ -1,9 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import {
-  Github,
   Twitter,
-  Linkedin,
   Globe,
   Mail,
   MessageCircle,
@@ -11,10 +9,37 @@ import {
   Shield,
   BookOpen,
   Box,
-  Rocket
+  Rocket,
+  Send, // Telegram icon
+  Gem,
+  LayersIcon,
+  CpuIcon,
+  NetworkIcon, // Changed from Blockchain
+  PowerIcon,
+  MenuIcon,
+  XIcon,
+  ChevronRightIcon,
+  WalletIcon,
+  MailQuestion,
+  Waypoints,
+  Telescope,
+  FileText, // Whitepaper icon
 } from 'lucide-react';
-import Image from 'next/image'
 
+import Image from 'next/image'
+const menuItems = [
+  { name: 'Buy', href: '#buy', icon: Gem },
+  { name: 'Vision', href: '#vision', icon: Telescope },
+  { name: 'Tokenomics', href: '#tokenomics', icon: LayersIcon },
+  { name: 'Roadmap', href: '#roadmap', icon: Waypoints },
+  { name: 'FAQ', href: '#faqss', icon: MailQuestion },
+  { 
+    name: 'Litepaper', 
+    href: '/whitepaper', // Update this with your actual whitepaper URL
+    icon: FileText,
+    isExternal: true 
+  },
+];
 const Footer = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -73,41 +98,56 @@ const Footer = () => {
             <p className="text-muted-foreground">
               Revolutionizing blockchain presales with secure, transparent, and efficient token launches.
             </p>
-            {/* Social Links */}
+            {/* Social Links - Updated section */}
             <div className="flex space-x-4">
-              {[Twitter, Github, Linkedin, Globe].map((Icon, index) => (
+              {[
+                { Icon: Twitter, href: 'https://x.com/swingfi_?s=21&t=Ypk5_Jl-ScmBr89qFS9ZGw' },
+                { Icon: Send, href: 'https://t.me/Swing_Fi' },
+                { Icon: Globe, href: '#' }
+              ].map((item, index) => (
                 <motion.a
                   key={index}
-                  href="#"
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.97 }}
                   className="w-10 h-10 rounded-full bg-accent/10 text-accent 
                     flex items-center justify-center hover:bg-accent/20 transition-colors"
                 >
-                  <Icon className="w-5 h-5" />
+                  <item.Icon className="w-5 h-5" />
                 </motion.a>
               ))}
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
-            <ul className="space-y-4">
-              {['Active Presales', 'Launch App', 'Documentation', 'Governance'].map((item, index) => (
-                <motion.li
-                  key={index}
-                  whileHover={{ x: 5 }}
-                  className="text-muted-foreground hover:text-accent transition-colors cursor-pointer"
-                >
-                  {item}
-                </motion.li>
-              ))}
-            </ul>
-          </div>
+    {/* Quick Links */}
+<div>
+  <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
+  <ul className="space-y-4">
+    {menuItems.map((item, index) => (
+      <motion.li
+        key={index}
+        whileHover={{ x: 5 }}
+        className="flex items-center text-muted-foreground hover:text-accent transition-colors cursor-pointer"
+      >
+        <item.icon className="w-5 h-5 mr-2 text-accent" />
+        {item.isExternal ? (
+          <a href={item.href} target="_blank" rel="noopener noreferrer">
+            {item.name}
+          </a>
+        ) : (
+          <a href={item.href}>{item.name}</a>
+        )}
+      </motion.li>
+    ))}
+  </ul>
+</div>
+
 
           {/* Resources */}
-          <div>
+          {/* <div>
             <h3 className="text-lg font-semibold mb-6">Resources</h3>
             <ul className="space-y-4">
               {[
@@ -127,10 +167,10 @@ const Footer = () => {
                 </motion.li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           {/* Newsletter */}
-          <div>
+          {/* <div>
             <h3 className="text-lg font-semibold mb-6">Stay Updated</h3>
             <p className="text-muted-foreground mb-4">
               Subscribe to our newsletter for the latest updates and features.
@@ -153,13 +193,13 @@ const Footer = () => {
                 </motion.button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom Bar */}
         <div className="py-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-muted-foreground text-sm">
-            © 2024 SpringFinance. All rights reserved.
+            © 2025 SpringFinance. All rights reserved.
           </div>
           
           <div className="flex items-center space-x-6">
