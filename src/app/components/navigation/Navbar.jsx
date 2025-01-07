@@ -59,19 +59,26 @@ export default function CyberNavbar() {
 
   const handleMenuClick = (e, item) => {
     if (item.isExternal) {
-      // For external links like whitepaper, let the default behavior happen
       return;
     }
     e.preventDefault();
-    const element = document.querySelector(item.href);
-    if (element) {
-      const offsetTop = element.offsetTop;
-      window.scrollTo({
-        top: offsetTop - 80, // Adjust for navbar height
-        behavior: 'smooth'
-      });
-      setIsOpen(false);
-    }
+    
+    // Close mobile menu first
+    setIsOpen(false);
+    
+    // Add slight delay to allow menu close animation to complete
+    setTimeout(() => {
+      const element = document.querySelector(item.href);
+      if (element) {
+        const offsetTop = element.offsetTop;
+        const navHeight = 80; // Height of the navbar
+        
+        window.scrollTo({
+          top: offsetTop - navHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 300); // 300ms delay to match menu close animation
   };
 
   useEffect(() => {
@@ -149,10 +156,15 @@ export default function CyberNavbar() {
             ))}
             <button
               onClick={connectWallet}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 rounded-xl
+                bg-gradient-to-r from-secondary-600/20 to-accent-600/20
+                hover:from-secondary-600/30 hover:to-accent-600/30
+                border border-accent-400/20"
             >
-              <Wallet className="w-4 h-4" />
-              <span>{isWalletConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}</span>
+              <Wallet className="w-4 h-4 text-accent-400" />
+              <span className="text-accent-400">
+                {isWalletConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
+              </span>
             </button>
           </div>
 
@@ -206,7 +218,10 @@ export default function CyberNavbar() {
                 >
                   <a
                     href={item.href}
-                    onClick={(e) => handleMenuClick(e, item)}
+                    onClick={(e) => {
+                      handleMenuClick(e, item);
+                      setIsOpen(false); // Close mobile menu after clicking
+                    }}
                     target={item.isExternal ? "_blank" : "_self"}
                     rel={item.isExternal ? "noopener noreferrer" : ""}
                     className="flex items-center space-x-3 px-4 py-3 rounded-xl
@@ -222,6 +237,7 @@ export default function CyberNavbar() {
               ))}
               
               <motion.button
+                onClick={connectWallet}
                 initial={{ y: 20, opacity: 0 }} 
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 20, opacity: 0 }}
@@ -231,7 +247,9 @@ export default function CyberNavbar() {
                   border border-accent-400/20 flex items-center justify-center space-x-2"
               >
                 <Wallet className="w-4 h-4 text-accent-400" />
-                <span className="text-accent-400">{isWalletConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}</span>
+                <span className="text-accent-400">
+                  {isWalletConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
+                </span>
               </motion.button>
             </div>
           </motion.div>
