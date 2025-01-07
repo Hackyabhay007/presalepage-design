@@ -24,9 +24,7 @@ import {
 } from 'lucide-react';
 
 import Image from 'next/image'
-import { useAppKit } from '@reown/appkit/react';
-import { useAppKitAccount } from '@reown/appkit/react';
-import { useAppKitWallet } from '@reown/appkit-wallet-button/react';
+import ConnectButton from '../buttons/ConnectButton';
 
 const menuItems = [
   { name: 'Buy', href: '#buy', icon: Gem },
@@ -45,32 +43,11 @@ const menuItems = [
 export default function CyberNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  
-  // Replace wallet state with AppKit hooks
-  const { open } = useAppKit();
-  const { address, isConnected } = useAppKitAccount();
-  const { isPending, connect } = useAppKitWallet({
-    onSuccess() {
-      console.log('Wallet connected successfully');
-    },
-    onError(error) {
-      console.error('Wallet connection error:', error);
-    }
-  });
 
   // Helper function to format address
   const formatAddress = (addr) => {
     if (!addr) return '';
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
-
-  // Handle wallet connection
-  const handleConnect = async () => {
-    if (isConnected) {
-      open({ view: 'Account' });
-    } else {
-      open({ view: 'Connect' });
-    }
   };
 
   const handleMenuClick = (e, item) => {
@@ -102,24 +79,6 @@ export default function CyberNavbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Update the wallet button JSX in both desktop and mobile views
-  const WalletButton = () => (
-    <button
-      onClick={handleConnect}
-      disabled={isPending}
-      className="flex items-center space-x-2 px-4 py-2 rounded-xl
-        bg-gradient-to-r from-secondary-600/20 to-accent-600/20
-        hover:from-secondary-600/30 hover:to-accent-600/30
-        border border-accent-400/20"
-    >
-      <Wallet className="w-4 h-4 text-accent-400" />
-      <span className="text-accent-400">
-        {isPending ? 'Connecting...' : 
-         isConnected ? formatAddress(address) : 'Connect Wallet'}
-      </span>
-    </button>
-  );
 
   return (
     <motion.nav
@@ -188,7 +147,7 @@ export default function CyberNavbar() {
                 <span>{item.name}</span>
               </a>
             ))}
-            <WalletButton />
+            <ConnectButton />
           </div>
 
           {/* Mobile Menu Button */}
@@ -259,7 +218,7 @@ export default function CyberNavbar() {
                 </motion.div>
               ))}
               
-              <WalletButton />
+              <ConnectButton className="w-full justify-center" />
             </div>
           </motion.div>
         )}
