@@ -53,6 +53,25 @@ interface Token {
   maxAmount?: number;
 }
 
+// Update the Ethereum provider interface with more specific types
+interface RequestArguments {
+  method: string;
+  params?: unknown[];
+}
+
+interface EthereumProvider {
+  request(args: RequestArguments): Promise<unknown>;
+  isMetaMask?: boolean;
+  chainId?: string;
+  selectedAddress?: string | null;
+}
+
+// declare global {
+//   interface Window {
+//     ethereum?: Record<string, unknown> & EthereumProvider;
+//   }
+// }
+
 // Network definitions
 const networks: Network[] = [
   {
@@ -392,9 +411,11 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
     const network = networks.find(n => n.id === networkId);
     if (!network) return;
 
-    if (typeof window.ethereum !== 'undefined') {
+    const ethereum = (window.ethereum as unknown) as EthereumProvider;
+    
+    if (typeof ethereum?.request !== 'undefined') {
       try {
-        await window.ethereum.request({
+        await ethereum.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: `0x${network.chainId.toString(16)}` }],
         });
@@ -402,7 +423,7 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
       } catch (error: any) {
         if (error.code === 4902) {
           try {
-            await window.ethereum.request({
+            await ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [
                 {
