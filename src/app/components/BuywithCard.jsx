@@ -12,9 +12,7 @@ const BuywithCard = ({ onSuccess }) => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            window.Buffer = Buffer;
-        }
+   
     }, []);
 
     const handleBuyWithCard = async () => {

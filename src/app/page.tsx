@@ -8,7 +8,7 @@ import RoadmapSection from "@/app/components/RoadmapSection";
 import FAQSection from "@/app/components/FAQSection";
 import Footer from "@/app/components/Footer";
 import Navbar from "@/app/components/navigation/Navbar";
-import { Providers } from '@/app/providers';
+import { Providers } from '../app/providers';
 
 //rainbowkit imports
 

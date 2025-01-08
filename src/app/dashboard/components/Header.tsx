@@ -134,10 +134,10 @@ export function Header() {
       return;
     }
     
-    if (typeof window.ethereum === 'undefined') {
-      toast.error('MetaMask is not installed. Please install MetaMask extension first.');
-      return;
-    }
+    // if (typeof window.ethereum === 'undefined') {
+    //   toast.error('MetaMask is not installed. Please install MetaMask extension first.');
+    //   return;
+    // }
 
     // Clean up any existing connection attempt
     cleanupConnection();
