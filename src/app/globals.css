@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,6 +10,32 @@
       rgba(126, 34, 206, 0.1),
       rgba(11, 11, 20, 1) 70%
     );
+  }
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 1.5rem));
+  }
+}
+
+.animate-scrolling-news {
+  animation: scroll 30s linear infinite;
+  min-width: max-content;
+}
+
+/* Pause animation on hover */
+.animate-scrolling-news:hover {
+  animation-play-state: paused;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .animate-scrolling-news {
+    animation-duration: 20s;
   }
 }
 
