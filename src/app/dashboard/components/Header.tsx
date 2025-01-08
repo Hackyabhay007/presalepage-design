@@ -18,21 +18,37 @@ export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { open } = useAppKit();
-  const { address, isConnected } = useAppKitAccount();
+  const { open } = useAppKit({
+    appId: process.env.NEXT_PUBLIC_APPKIT_APP_ID,
+    onError: (error) => {
+      console.error('AppKit Error:', error);
+      toast.error('Failed to initialize AppKit');
+    }
+  });
+  const { address, isConnected } = useAppKitAccount({
+    onDisconnect: () => {
+      console.log('Wallet disconnected');
+      toast.info('Wallet disconnected');
+    }
+  });
   const { isPending } = useAppKitWallet({
     onSuccess() {
       console.log('Wallet connected successfully');
       setIsConnecting(false);
+      toast.success('Wallet connected successfully');
     },
     onError(error) {
       console.error('Wallet connection error:', error);
       setIsConnecting(false);
-      toast.error(
-        error.message === 'Connection declined' 
-          ? 'Connection was declined. Please try again.'
-          : 'Failed to connect wallet. Please try again.'
-      );
+      
+      // More specific error messages
+      if (error.message?.includes('provider not found')) {
+        toast.error('MetaMask not detected. Please install MetaMask extension');
+      } else if (error.message === 'Connection declined') {
+        toast.error('Connection was declined. Please try again.');
+      } else {
+        toast.error(`Failed to connect wallet: ${error.message || 'Unknown error'}`);
+      }
     }
   });
 
@@ -42,10 +58,16 @@ export function Header() {
       return;
     }
     
+    if (typeof window.ethereum === 'undefined') {
+      toast.error('MetaMask is not installed. Please install MetaMask extension first.');
+      return;
+    }
+    
     setIsConnecting(true);
     try {
-      open({ view: 'Connect' });
+      await open({ view: 'Connect' });
     } catch (error) {
+      console.error('Connection error:', error);
       setIsConnecting(false);
       toast.error('Failed to initiate wallet connection');
     }
