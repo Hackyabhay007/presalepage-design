@@ -1,6 +1,6 @@
 // components/BuyTokenModal.tsx
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
@@ -23,8 +23,10 @@ import {
   useWaitForTransactionReceipt,
   useWalletClient,
   usePublicClient,
+  useReadContract
 } from "wagmi";
 import { type Hash } from 'viem';
+import { PaymentSuccessModal } from '../../components/PaymentSuccessModal';
 
 interface BuyTokenModalProps {
   isOpen: boolean;
@@ -212,12 +214,19 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
   const [selectedNetwork, setSelectedNetwork] = useState<string>('eth');
   const [selectedToken, setSelectedToken] = useState<Token>(networkTokens['eth'][0]);
   const [amount, setAmount] = useState<string>('');
+  const [tokenAmount, setTokenAmount] = useState<string>("0.00"); // Move this line here
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [estimatedGas, setEstimatedGas] = useState<number | null>(null);
   const [isApproved, setIsApproved] = useState(false);
   const [prices, setPrices] = useState<{ [key: string]: number }>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [transactionData, setTransactionData] = useState({
+    hash: '',
+    amount: 0,
+    symbol: '',
+  });
 
   const { isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
@@ -237,6 +246,20 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
     error: confirmError
   } = useWaitForTransactionReceipt({
     hash: approveHash,
+  });
+
+  // Add contract reading for token price
+  const { data: tokenPriceInUSDT } = useReadContract({
+    address: "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC",
+    abi: abi,
+    functionName: "TokenPriceInUSDT"
+  });
+
+  // Add token prices state
+  const [tokenPrices, setTokenPrices] = useState({
+    ETH: 0,
+    BNB: 0,
+    MATIC: 0
   });
 
   // Watch for successful confirmation
@@ -327,9 +350,7 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
       setTransactionHash(hash);
       console.log("Native Payment transaction submitted:", hash);
       
-      setTimeout(() => {
-        resetAndClose();
-      }, 3000);
+      handlePurchaseSuccess(hash);
     } catch (error: any) {
       console.error("Error:", error);
       setError(error.message || 'Transaction failed. Please try again.');
@@ -345,7 +366,7 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
       setIsProcessing(true);
       setError(null);
       
-      const usdtAmount = amount;
+      const usdtAmount = parseUnits(amount, selectedToken.decimals);
       
       const hash = await walletClient.sendTransaction({
         to: '0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC',
@@ -359,9 +380,7 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
       setTransactionHash(hash);
       console.log("USDT Payment transaction submitted:", hash);
       
-      setTimeout(() => {
-        resetAndClose();
-      }, 3000);
+      handlePurchaseSuccess(hash);
     } catch (error: any) {
       console.error("Error:", error);
       setError(error.message || 'Transaction failed. Please try again.');
@@ -749,177 +768,230 @@ export default function BuyTokenModal({ isOpen, onClose }: BuyTokenModalProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // Add success handler
+  const handlePurchaseSuccess = (hash: string) => {
+    setTransactionData({
+      hash,
+      amount: Number(amount),
+      symbol: selectedToken.symbol,
+    });
+    setShowSuccessModal(true);
+    setTimeout(() => {
+      resetAndClose();
+    }, 3000);
+  };
+
+  // Update calculateTokens function
+  const calculateTokens = useCallback((value: string) => {
+    if (!value) return "0.00";
+
+    try {
+      const tokenPrice = tokenPriceInUSDT ? Number(tokenPriceInUSDT) / 10**6 : 1;
+      let tokenAmount;
+
+      if (selectedToken.symbol === "USDT") {
+        tokenAmount = Number(value) / tokenPrice;
+      } else {
+        const cryptoPrice = tokenPrices[selectedToken.symbol as keyof typeof tokenPrices] || 0;
+        const usdtValue = Number(value) * cryptoPrice;
+        tokenAmount = usdtValue / tokenPrice;
+      }
+      
+      return tokenAmount.toFixed(2);
+    } catch (error) {
+      console.error('Error calculating tokens:', error);
+      return "0.00";
+    }
+  }, [selectedToken, tokenPrices, tokenPriceInUSDT]);
+
+  // Add useEffect for token amount calculation
+  useEffect(() => {
+    const newAmount = calculateTokens(amount);
+    setTokenAmount(newAmount);
+  }, [amount, calculateTokens]);
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={(e) => e.target === e.currentTarget && resetAndClose()}
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm
-            flex items-center justify-center p-4"
-        >
+    <>
+      <AnimatePresence>
+        {isOpen && (
           <motion.div
-            initial={{ scale: 0.95 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0.95 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-card w-full max-w-lg rounded-2xl shadow-xl 
-              border border-border/50 overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={(e) => e.target === e.currentTarget && resetAndClose()}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm
+              flex items-center justify-center p-4"
           >
-            {/* Header */}
-            <div className="relative border-b border-border/50 p-6">
-              <h2 className="text-2xl font-bold">Buy Tokens</h2>
-              <p className="text-muted-foreground mt-1">
-                {step === 1 && "Select a network to continue"}
-                {step === 2 && "Choose your preferred token"}
-                {step === 3 && "Enter the amount to purchase"}
-              </p>
-              <button
-                onClick={resetAndClose}
-                className="absolute right-4 top-4 p-2 rounded-full 
-                  hover:bg-background/80 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              {/* Network Selection */}
-              {step === 1 && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-4"
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card w-full max-w-lg rounded-2xl shadow-xl 
+                border border-border/50 overflow-hidden"
+            >
+              {/* Header */}
+              <div className="relative border-b border-border/50 p-6">
+                <h2 className="text-2xl font-bold">Buy Tokens</h2>
+                <p className="text-muted-foreground mt-1">
+                  {step === 1 && "Select a network to continue"}
+                  {step === 2 && "Choose your preferred token"}
+                  {step === 3 && "Enter the amount to purchase"}
+                </p>
+                <button
+                  onClick={resetAndClose}
+                  className="absolute right-4 top-4 p-2 rounded-full 
+                    hover:bg-background/80 transition-colors"
                 >
-                  <div className="space-y-4 mb-6">
-                    <label className="block text-sm font-medium text-gray-200">Select Network</label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {networks.map((network) => (
-                        <button
-                          key={network.id}
-                          onClick={() => handleNetworkChange(network.id)}
-                          className={`flex items-center justify-center space-x-2 p-3 rounded-lg border transition-all ${
-                            selectedNetwork === network.id
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-gray-700 hover:border-primary/50 text-gray-300'
-                          }`}
-                        >
-                          <img src={network.icon} className="w-5 h-5" />
-                          <span className="text-sm font-medium">{network.name}</span>
-                        </button>
-                      ))}
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                {/* Network Selection */}
+                {step === 1 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-4 mb-6">
+                      <label className="block text-sm font-medium text-gray-200">Select Network</label>
+                      <div className="grid grid-cols-3 gap-3">
+                        {networks.map((network) => (
+                          <button
+                            key={network.id}
+                            onClick={() => handleNetworkChange(network.id)}
+                            className={`flex items-center justify-center space-x-2 p-3 rounded-lg border transition-all ${
+                              selectedNetwork === network.id
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-gray-700 hover:border-primary/50 text-gray-300'
+                            }`}
+                          >
+                            <img src={network.icon} className="w-5 h-5" />
+                            <span className="text-sm font-medium">{network.name}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
 
-              {/* Token Selection */}
-              {step === 2 && selectedNetwork && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-4"
-                >
-                  <h2 className="text-xl font-bold mb-6">Select Token</h2>
-                  {networkTokens[selectedNetwork].map((token) => (
-                    <TokenItem key={token.id} token={token} onSelect={() => handleTokenSelect(token)} />
-                  ))}
-                </motion.div>
-              )}
+                {/* Token Selection */}
+                {step === 2 && selectedNetwork && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-4"
+                  >
+                    <h2 className="text-xl font-bold mb-6">Select Token</h2>
+                    {networkTokens[selectedNetwork].map((token) => (
+                      <TokenItem key={token.id} token={token} onSelect={() => handleTokenSelect(token)} />
+                    ))}
+                  </motion.div>
+                )}
 
-              {/* Amount Input */}
-              {step === 3 && selectedToken && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground">
-                        Amount to Buy
-                      </label>
-                      <div className="relative mt-1">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                          <CurrencyDollar 
-                            weight="bold"
-                            className="w-5 h-5 text-muted-foreground" 
+                {/* Amount Input */}
+                {step === 3 && selectedToken && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">
+                          Amount to Buy
+                        </label>
+                        <div className="relative mt-1">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                            <CurrencyDollar 
+                              weight="bold"
+                              className="w-5 h-5 text-muted-foreground" 
+                            />
+                          </div>
+                          <input
+                            type="number"
+                            value={amount}
+                            onChange={(e) => handleAmountChange(e.target.value)}
+                            className="w-full pl-12 pr-20 py-3 rounded-lg bg-background 
+                              border border-border/50 focus:outline-none 
+                              focus:border-accent/50 transition-colors"
+                            placeholder="0.00"
+                            disabled={isProcessing}
+                            step="any"
+                            min={selectedToken.minAmount}
+                            max={selectedToken.maxAmount}
                           />
-                        </div>
-                        <input
-                          type="number"
-                          value={amount}
-                          onChange={(e) => handleAmountChange(e.target.value)}
-                          className="w-full pl-12 pr-20 py-3 rounded-lg bg-background 
-                            border border-border/50 focus:outline-none 
-                            focus:border-accent/50 transition-colors"
-                          placeholder="0.00"
-                          disabled={isProcessing}
-                          step="any"
-                          min={selectedToken.minAmount}
-                          max={selectedToken.maxAmount}
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 
-                          text-sm text-muted-foreground">
-                          {selectedToken.symbol}
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 
+                            text-sm text-muted-foreground">
+                            {selectedToken.symbol}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="bg-background/50 rounded-lg p-4 space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Price per token</span>
-                        <span>{formatPrice(selectedToken.price)}</span>
-                      </div>
-                      {estimatedGas && (
+                      <div className="bg-background/50 rounded-lg p-4 space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Network Fee</span>
-                          <span>{formatPrice(estimatedGas)}</span>
+                          <span className="text-muted-foreground">Price per token</span>
+                          <span>{formatPrice(selectedToken.price)}</span>
+                        </div>
+                        {estimatedGas && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Network Fee</span>
+                            <span>{formatPrice(estimatedGas)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-semibold pt-2 
+                          border-t border-border/50">
+                          <span>Total</span>
+                          <span>{formatPrice(calculateTotal())}</span>
+                        </div>
+                      </div>
+
+                      {error && (
+                        <div className="flex items-center space-x-2 text-red-500 text-sm">
+                          <WarningCircle className="w-4 h-4" />
+                          <span>{error}</span>
                         </div>
                       )}
-                      <div className="flex justify-between font-semibold pt-2 
-                        border-t border-border/50">
-                        <span>Total</span>
-                        <span>{formatPrice(calculateTotal())}</span>
-                      </div>
+
+                      {renderTransactionDetails()}
                     </div>
 
-                    {error && (
-                      <div className="flex items-center space-x-2 text-red-500 text-sm">
-                        <WarningCircle className="w-4 h-4" />
-                        <span>{error}</span>
-                      </div>
-                    )}
+                    {renderActionButton()}
+                  </motion.div>
+                )}
+              </div>
 
-                    {renderTransactionDetails()}
-                  </div>
-
-                  {renderActionButton()}
-                </motion.div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-border/50 p-4">
-              <button
-                onClick={handleBack}
-                className="text-muted-foreground hover:text-foreground 
-                  transition-colors flex items-center space-x-2"
-              >
-                <CaretLeft className="w-4 h-4" />
-                <span>{step === 1 ? 'Close' : 'Back'}</span>
-              </button>
-            </div>
+              {/* Footer */}
+              <div className="border-t border-border/50 p-4">
+                <button
+                  onClick={handleBack}
+                  className="text-muted-foreground hover:text-foreground 
+                    transition-colors flex items-center space-x-2"
+                >
+                  <CaretLeft className="w-4 h-4" />
+                  <span>{step === 1 ? 'Close' : 'Back'}</span>
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+      
+      {/* Add Success Modal */}
+      <PaymentSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        transactionHash={transactionData.hash}
+        tokenAmount={transactionData.amount}
+        tokenSymbol={transactionData.symbol}
+      />
+    </>
   );
 }
 
@@ -951,3 +1023,4 @@ const TokenItem = ({ token, onSelect }: { token: Token, onSelect: () => void }) 
     </div>
   </motion.button>
 );
+
