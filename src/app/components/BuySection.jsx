@@ -595,14 +595,23 @@ const BuySection = () => {
   };
 
   const switchNetwork = async (networkId) => {
-    if (typeof window.ethereum !== 'undefined') {
-      const network = networks[networkId];
-      if (!network) return;
+    if (typeof window.ethereum === 'undefined') {
+      console.error('MetaMask is not installed');
+      return;
+    }
 
+    const network = networks[networkId];
+    if (network) {
       const chainIdHex = `0x${network.chainId.toString(16)}`;
       
       try {
-        // Try switching to the network
+        // Check if the provider is MetaMask
+        if (!window.ethereum.isMetaMask) {
+          console.error('Please use MetaMask wallet');
+          return;
+        }
+
+        // Try switching to the network using MetaMask
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: chainIdHex }],
