@@ -15,6 +15,7 @@ import { useAppKitWallet } from '@reown/appkit-wallet-button/react';
 import { toast } from 'sonner';
 import BuyTokenModal from './BuyTokenModal';
 import TransactionHistory from './TransactionHistory';
+import { PaymentSuccessModal } from '@/app/components/PaymentSuccessModal';
 import { supabase } from '@/lib/supabase';
 
 interface Transaction {
@@ -53,6 +54,12 @@ export function TokenDashboard() {
     totalUsdt: 0,
     totalTokens: 0
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [transactionData, setTransactionData] = useState<{
+    hash: string;
+    amount: number;
+    symbol: string;
+  }>({ hash: '', amount: 0, symbol: '' });
   
   const [tokenPrices, setTokenPrices] = useState({
     ethereum: 0,
@@ -421,6 +428,16 @@ export function TokenDashboard() {
           />
         )}
       </AnimatePresence>
+
+      {showSuccessModal && (
+        <PaymentSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          transactionHash={transactionData.hash}
+          tokenAmount={transactionData.amount}
+          tokenSymbol={transactionData.symbol}
+        />
+      )}
     </div>
   );
 }
