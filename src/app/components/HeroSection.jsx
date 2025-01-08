@@ -52,6 +52,7 @@ const PresaleHero = () => {
   // Price constants
   const stage1Price = 0.001;
   const stage2Price = 0.00125;
+  const PERCENT_INCREASE = ((stage2Price - stage1Price) / stage1Price) * 100;
   const ethPrice = 2200; // Example ETH price in USD, you might want to fetch this dynamically
   const stage1USD = (stage1Price * ethPrice).toFixed(2);
   const stage2USD = (stage2Price * ethPrice).toFixed(2);
@@ -190,43 +191,45 @@ const PresaleHero = () => {
               />
               
               {/* Floating Elements */}
-              <motion.div
-                animate={{ 
-                  y: [0, -10, 0],
-                  rotate: [0, 5, 0]
-                }}
-                transition={{ 
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute -top-8 -right-8 bg-accent-500/10 backdrop-blur-xl 
-                border border-accent-500/20 rounded-xl p-4 shadow-xl"
-              >
-                <div className="text-sm font-medium text-accent-400">Stage 1 Price</div>
-                <div className="text-xl font-bold text-text">1 ETH = 50,000 TOKEN</div>
-                <div className="text-sm text-accent-400">${stage1USD} per token</div>
-                <div className="text-sm text-accent-400">Raise: 50K</div>
-              </motion.div>
+             {/* Stage 1 - Current Price */}
+      <motion.div
+        animate={{
+          y: [0, -10, 0],
+          rotate: [0, 5, 0]
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="absolute -top-8 -right-8 bg-accent-500/10 backdrop-blur-xl
+          border border-accent-500/20 rounded-xl p-4 shadow-xl"
+      >
+        <div className="text-sm font-medium text-accent-400">Stage 1 (Current)</div>
+        <div className="text-xl font-bold text-text">${stage1Price}</div>
+        <div className="text-sm text-accent-400">Current Price</div>
+      </motion.div>
 
-              <motion.div
-                animate={{ 
-                  y: [0, 10, 0],
-                  rotate: [0, -5, 0]
-                }}
-                transition={{ 
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute -bottom-8 -left-8 bg-secondary-500/10 backdrop-blur-xl 
-                border border-secondary-500/20 rounded-xl p-4 shadow-xl"
-              >
-                <div className="text-sm font-medium text-secondary-400">Stage 2 Price</div>
-                <div className="text-xl font-bold text-text">1 ETH = 40,000 TOKEN</div>
-                <div className="text-sm text-secondary-400">${stage2USD} per token</div>
-                <div className="text-sm text-secondary-400">Raise: 75K</div>
-              </motion.div>
+{/* Stage 2 - Next Price */}
+<motion.div
+        animate={{
+          y: [0, 10, 0],
+          rotate: [0, -5, 0]
+        }}
+        transition={{
+          duration: 5,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="absolute -bottom-8 -left-8 bg-secondary-500/10 backdrop-blur-xl
+          border border-secondary-500/20 rounded-xl p-4 shadow-xl"
+      >
+        <div className="text-sm font-medium text-secondary-400">Stage 2 (Next)</div>
+        <div className="text-xl font-bold text-text">${stage2Price}</div>
+        <div className="text-sm text-secondary-400">
+          <span className="text-green-400">+{PERCENT_INCREASE.toFixed(2)}%</span> from Stage 1
+        </div>
+      </motion.div>
             </div>
 
             {/* Background Glow Effects */}
