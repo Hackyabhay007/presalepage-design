@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { 
@@ -18,32 +18,47 @@ export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionAttempt, setConnectionAttempt] = useState<NodeJS.Timeout | null>(null);
+
   const { open } = useAppKit({
     appId: process.env.NEXT_PUBLIC_APPKIT_APP_ID,
     onError: (error) => {
       console.error('AppKit Error:', error);
       toast.error('Failed to initialize AppKit');
+      cleanupConnection();
     }
   });
+
+  const cleanupConnection = () => {
+    setIsConnecting(false);
+    if (connectionAttempt) {
+      clearTimeout(connectionAttempt);
+      setConnectionAttempt(null);
+    }
+  };
+
   const { address, isConnected } = useAppKitAccount({
     onDisconnect: () => {
       console.log('Wallet disconnected');
       toast.info('Wallet disconnected');
+      cleanupConnection();
     }
   });
+
   const { isPending } = useAppKitWallet({
     onSuccess() {
       console.log('Wallet connected successfully');
-      setIsConnecting(false);
       toast.success('Wallet connected successfully');
+      cleanupConnection();
     },
     onError(error) {
       console.error('Wallet connection error:', error);
-      setIsConnecting(false);
+      cleanupConnection();
       
-      // More specific error messages
       if (error.message?.includes('provider not found')) {
         toast.error('MetaMask not detected. Please install MetaMask extension');
+      } else if (error.message?.includes('Connection can be declined')) {
+        toast.error('Previous connection request is still pending. Please wait a moment and try again.');
       } else if (error.message === 'Connection declined') {
         toast.error('Connection was declined. Please try again.');
       } else {
@@ -54,7 +69,7 @@ export function Header() {
 
   const handleConnect = async () => {
     if (isConnecting) {
-      toast.error('Please wait for the previous connection request to complete');
+      toast.error('Connection in progress. Please wait...');
       return;
     }
     
@@ -62,13 +77,27 @@ export function Header() {
       toast.error('MetaMask is not installed. Please install MetaMask extension first.');
       return;
     }
+
+    // Clean up any existing connection attempt
+    cleanupConnection();
     
     setIsConnecting(true);
+    
     try {
+      // Set a timeout to automatically reset the connection state if it takes too long
+      const timeout = setTimeout(() => {
+        if (isConnecting) {
+          cleanupConnection();
+          toast.error('Connection request timed out. Please try again.');
+        }
+      }, 30000); // 30 second timeout
+      
+      setConnectionAttempt(timeout);
+      
       await open({ view: 'Connect' });
     } catch (error) {
       console.error('Connection error:', error);
-      setIsConnecting(false);
+      cleanupConnection();
       toast.error('Failed to initiate wallet connection');
     }
   };
@@ -93,6 +122,12 @@ export function Header() {
       window.open(`https://etherscan.io/address/${address}`, '_blank');
     }
   };
+
+  useEffect(() => {
+    return () => {
+      cleanupConnection();
+    };
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
