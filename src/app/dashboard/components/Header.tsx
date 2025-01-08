@@ -20,14 +20,23 @@ export function Header() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionAttempt, setConnectionAttempt] = useState<NodeJS.Timeout | null>(null);
 
-  const { open } = useAppKit({
-    appId: process.env.NEXT_PUBLIC_APPKIT_APP_ID,
-    onError: (error) => {
-      console.error('AppKit Error:', error);
-      toast.error('Failed to initialize AppKit');
-      cleanupConnection();
-    }
-  });
+  // Interface for AppKit error handling
+  interface AppKitConfig {
+    appId: string | undefined;
+    onError: (error: { message?: string; code?: number }) => void;
+  }
+
+  // Interface for AppKit open function
+  interface AppKitOpenFunction {
+    (options: { view: "Account" | "Connect" | "Networks" | "ApproveTransaction" | "OnRampProviders" }): Promise<void>;
+  }
+
+  // Interface for AppKit hook return
+  interface AppKitHook {
+    open: AppKitOpenFunction;
+  }
+
+  const { open }: AppKitHook = useAppKit();
 
   const cleanupConnection = () => {
     setIsConnecting(false);
@@ -37,14 +46,66 @@ export function Header() {
     }
   };
 
-  const { address, isConnected } = useAppKitAccount({
-    onDisconnect: () => {
+  const { address, isConnected } = useAppKitAccount();
+
+  useEffect(() => {
+    if (!isConnected && address) {
       console.log('Wallet disconnected');
       toast.info('Wallet disconnected');
       cleanupConnection();
     }
-  });
+  }, [isConnected, address]);
+  // Error interface for AppKit errors
+  interface AppKitError {
+    message?: string;
+    code?: number;
+    name?: string;
+    stack?: string;
+    cause?: unknown;
+  }
 
+  // Interface for managing connection state
+  interface ConnectionState {
+    isConnecting: boolean;
+    connectionAttempt: NodeJS.Timeout | null;
+  }
+
+  // Interface for copy state
+  interface CopyState {
+    copySuccess: boolean;
+  }
+
+  // Interface for dropdown state
+  interface DropdownState {
+    isDropdownOpen: boolean;
+  }
+
+  interface DropdownProps {
+    isOpen: boolean;
+    address: string | undefined;
+    onClose: () => void;
+  }
+
+  interface WalletButtonProps {
+    isPending: boolean;
+    isConnecting: boolean;
+    onClick: () => void;
+  }
+
+  interface CopyButtonProps {
+    success: boolean;
+    onClick: () => void;
+  }
+
+  interface EtherscanButtonProps {
+    onClick: () => void;
+  }
+
+  interface DisconnectButtonProps {
+    onClick: () => void;
+  }
+
+  type CleanupFunction = () => void;
   const { isPending } = useAppKitWallet({
     onSuccess() {
       console.log('Wallet connected successfully');
