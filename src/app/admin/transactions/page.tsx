@@ -1,165 +1,79 @@
-// app/(admin)/admin/transactions/page.tsx
 'use client';
-import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
-import { motion } from 'framer-motion';
-import { RefreshCcw } from 'lucide-react';
-import { TransactionDetailsModal } from './TransactionDetailsModal';
-import { utils } from 'ethers';
 
-// Event types and interfaces
-interface TokenPurchaseEvent {
-  id: string;
-  timestamp: string;
-  eventType: 'BoughtWithNative' | 'BoughtWithUSDT';
-  transactionHash: string;
-  network: string;
-  explorer: string;
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { RefreshCcw, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { TransactionDetailsModal } from './TransactionDetailsModal';
+import { createClient } from '@supabase/supabase-js';
+import { formatDistanceToNow } from 'date-fns';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+interface Transaction {
+  id: number;
+  address: string;
+  transaction_hash: string;
+  chain_name: string;
+  event_name: string;
+  payment_type: 'native' | 'usdt';
+  deposit_amount: string;
+  token_amount: string;
+  block_number: number;
+  block_timestamp: Date;
+  created_at: Date;
 }
 
-// Network configurations
-const NETWORKS = {
-  eth: {
-    name: 'Ethereum',
-    rpcUrl: 'https://rpc.flashbots.net',
-    explorer: 'https://etherscan.io',
-    blocksPerDay: 7200
-  },
-  bsc: {
-    name: 'BSC',
-    rpcUrl: 'https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3',
-    explorer: 'https://bscscan.com',
-    blocksPerDay: 28800
-  },
-  polygon: {
-    name: 'Polygon',
-    rpcUrl: 'https://polygon-rpc.com',
-    explorer: 'https://polygonscan.com',
-    blocksPerDay: 43200
-  }
-};
-
-const CONTRACT_ADDRESS = "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC".toLowerCase();
-
-const EVENT_SIGNATURES = {
-  BoughtWithNative: "BoughtWithNative(address,uint256,uint256,uint256)",
-  BoughtWithUSDT: "BoughtWithUSDT(address,uint256,uint256,uint256)"
-};
-
-// Create providers for each network
-const providers = Object.entries(NETWORKS).reduce((acc, [network, config]) => ({
-  ...acc,
-  [network]: new ethers.providers.JsonRpcProvider(config.rpcUrl)
-}), {} as { [key: string]: ethers.providers.JsonRpcProvider });
+type SortField = 'block_timestamp' | 'deposit_amount' | 'chain_name' | 'payment_type';
+type SortOrder = 'asc' | 'desc';
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState<TokenPurchaseEvent[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  
+  // Search and filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedChain, setSelectedChain] = useState<string>('all');
+  const [selectedPaymentType, setSelectedPaymentType] = useState<string>('all');
+  const [sortField, setSortField] = useState<SortField>('block_timestamp');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  const fetchEventsForNetwork = async (network: string, provider: ethers.providers.JsonRpcProvider) => {
-    try {
-      const currentBlock = await provider.getBlockNumber();
-      // Fetch last 2 hours of blocks instead of 24 hours to avoid rate limiting
-      const blocksPerHour = NETWORKS[network].blocksPerDay / 24;
-      const fromBlock = currentBlock - (blocksPerHour * 2);
-
-      // Fetch events in smaller chunks
-      const CHUNK_SIZE = 2000; // Number of blocks per request
-      const chunks = [];
-      
-      for (let startBlock = fromBlock; startBlock < currentBlock; startBlock += CHUNK_SIZE) {
-        const endBlock = Math.min(startBlock + CHUNK_SIZE - 1, currentBlock);
-        
-        // Add delay between chunks to avoid rate limiting
-        if (chunks.length > 0) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        const [nativeLogs, usdtLogs] = await Promise.all([
-          provider.getLogs({
-            address: CONTRACT_ADDRESS,
-            topics: [utils.id(EVENT_SIGNATURES.BoughtWithNative)],
-            fromBlock: startBlock,
-            toBlock: endBlock
-          }).catch(error => {
-            console.warn(`Error fetching native logs for ${network} chunk ${startBlock}-${endBlock}:`, error);
-            return [];
-          }),
-          provider.getLogs({
-            address: CONTRACT_ADDRESS,
-            topics: [utils.id(EVENT_SIGNATURES.BoughtWithUSDT)],
-            fromBlock: startBlock,
-            toBlock: endBlock
-          }).catch(error => {
-            console.warn(`Error fetching USDT logs for ${network} chunk ${startBlock}-${endBlock}:`, error);
-            return [];
-          })
-        ]);
-
-        chunks.push(...nativeLogs, ...usdtLogs);
-      }
-
-      // Process all logs
-      const processedLogs = chunks.map(log => ({
-        id: `${network}-${log.transactionHash}-${log.logIndex}`,
-        timestamp: new Date().toISOString(), // Will be updated when we fetch the block
-        eventType: log.topics[0] === utils.id(EVENT_SIGNATURES.BoughtWithNative) ? 'BoughtWithNative' : 'BoughtWithUSDT',
-        transactionHash: log.transactionHash,
-        network,
-        explorer: NETWORKS[network].explorer
-      }));
-
-      // Fetch timestamps in batches
-      const BATCH_SIZE = 10;
-      for (let i = 0; i < processedLogs.length; i += BATCH_SIZE) {
-        const batch = processedLogs.slice(i, i + BATCH_SIZE);
-        await Promise.all(
-          batch.map(async (log) => {
-            try {
-              const tx = await provider.getTransaction(log.transactionHash);
-              if (tx && tx.blockNumber) {
-                const block = await provider.getBlock(tx.blockNumber);
-                log.timestamp = new Date(block.timestamp * 1000).toISOString();
-              }
-            } catch (error) {
-              console.warn(`Error fetching timestamp for tx ${log.transactionHash}:`, error);
-            }
-          })
-        );
-        
-        // Add small delay between batches
-        if (i + BATCH_SIZE < processedLogs.length) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-      }
-
-      return processedLogs;
-    } catch (error) {
-      console.error(`Error fetching events for ${network}:`, error);
-      return [];
-    }
-  };
-
-  const fetchAllEvents = async () => {
+  const fetchTransactions = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const allEvents = await Promise.all(
-        Object.entries(providers).map(([network, provider]) => 
-          fetchEventsForNetwork(network, provider)
-        )
-      );
+      let query = supabase
+        .from('user_transactions')
+        .select('*');
 
-      // Combine and sort all events by timestamp
-      const combinedEvents = allEvents
-        .flat()
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      // Apply filters
+      if (selectedChain !== 'all') {
+        query = query.eq('chain_name', selectedChain);
+      }
+      if (selectedPaymentType !== 'all') {
+        query = query.eq('payment_type', selectedPaymentType);
+      }
+      if (searchQuery) {
+        query = query.or(`address.ilike.%${searchQuery}%,transaction_hash.ilike.%${searchQuery}%`);
+      }
 
-      setTransactions(combinedEvents);
+      // Apply sorting
+      query = query.order(sortField, { ascending: sortOrder === 'asc' });
+
+      const { data, error: supabaseError } = await query;
+
+      if (supabaseError) {
+        throw supabaseError;
+      }
+
+      setTransactions(data || []);
     } catch (error) {
-      console.error('Error fetching events:', error);
+      console.error('Error fetching transactions:', error);
       setError('Failed to fetch transactions. Please try again.');
     } finally {
       setLoading(false);
@@ -167,26 +81,89 @@ export default function TransactionsPage() {
   };
 
   useEffect(() => {
-    fetchAllEvents();
-  }, []);
+    fetchTransactions();
+  }, [selectedChain, selectedPaymentType, searchQuery, sortField, sortOrder]);
+
+  const getExplorerUrl = (chainName: string, hash: string) => {
+    const explorers: { [key: string]: string } = {
+      'ethereum': 'https://etherscan.io',
+      'bsc': 'https://bscscan.com',
+      'polygon': 'https://polygonscan.com'
+    };
+    
+    const baseUrl = explorers[chainName.toLowerCase()];
+    if (!baseUrl) return '#';
+    return `${baseUrl}/tx/${hash}`;
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) return null;
+    return sortOrder === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />;
+  };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Token Purchase Transactions</h1>
         <button 
-          onClick={fetchAllEvents}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          onClick={fetchTransactions}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
           <RefreshCcw size={16} />
           Refresh
         </button>
       </div>
 
+      {/* Search and Filters */}
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[300px]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search by address or transaction hash..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <select
+            value={selectedChain}
+            onChange={(e) => setSelectedChain(e.target.value)}
+            className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Networks</option>
+            <option value="ethereum">Ethereum</option>
+            <option value="bsc">BSC</option>
+            <option value="polygon">Polygon</option>
+          </select>
+          <select
+            value={selectedPaymentType}
+            onChange={(e) => setSelectedPaymentType(e.target.value)}
+            className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Payment Types</option>
+            <option value="native">ETH</option>
+            <option value="usdt">USDT</option>
+          </select>
+        </div>
+      </div>
+
       {loading && (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2">Loading transactions...</p>
+          <p className="mt-2 text-gray-600">Loading transactions...</p>
         </div>
       )}
 
@@ -204,34 +181,79 @@ export default function TransactionsPage() {
 
       {!loading && !error && transactions.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border rounded-lg">
-            <thead className="bg-gray-50">
+          <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Network</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Hash</th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('block_timestamp')}
+                >
+                  <div className="flex items-center gap-1">
+                    Time {renderSortIcon('block_timestamp')}
+                  </div>
+                </th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('payment_type')}
+                >
+                  <div className="flex items-center gap-1">
+                    Type {renderSortIcon('payment_type')}
+                  </div>
+                </th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('chain_name')}
+                >
+                  <div className="flex items-center gap-1">
+                    Network {renderSortIcon('chain_name')}
+                  </div>
+                </th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('deposit_amount')}
+                >
+                  <div className="flex items-center gap-1">
+                    Amount {renderSortIcon('deposit_amount')}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
               {transactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(tx.timestamp).toLocaleString()}
+                <tr 
+                  key={tx.id} 
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => setSelectedTransaction(tx)}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    {formatDistanceToNow(new Date(tx.block_timestamp), { addSuffix: true })}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {tx.eventType === 'BoughtWithNative' ? 'Purchase with ETH' : 'Purchase with USDT'}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    {tx.payment_type === 'native' ? 'ETH' : 'USDT'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {tx.network}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 capitalize">
+                    {tx.chain_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    {parseFloat(tx.deposit_amount).toFixed(6)} {tx.payment_type === 'native' ? 'ETH' : 'USDT'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-500 hover:text-blue-700">
                     <a 
-                      href={`${tx.explorer}/tx/${tx.transactionHash}`}
+                      href={getExplorerUrl(tx.chain_name, tx.transaction_hash)}
                       target="_blank" 
                       rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const url = getExplorerUrl(tx.chain_name, tx.transaction_hash);
+                        if (url !== '#') {
+                          window.open(url, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
                     >
-                      {tx.transactionHash.slice(0, 6)}...{tx.transactionHash.slice(-4)}
+                      View
                     </a>
                   </td>
                 </tr>
@@ -240,6 +262,11 @@ export default function TransactionsPage() {
           </table>
         </div>
       )}
+
+      <TransactionDetailsModal
+        transaction={selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+      />
     </div>
   );
 }

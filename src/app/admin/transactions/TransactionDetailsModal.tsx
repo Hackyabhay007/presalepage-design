@@ -1,36 +1,32 @@
-// components/TransactionDetailsModal.tsx
-import { motion, AnimatePresence } from 'framer-motion';
+'use client';
 
-interface Transaction {
-  id: string;
-  status: 'pending' | 'successful' | 'failed';
-  fiatAmount: number;
-  cryptoAmount: number;
-  cryptoType: string;
-  paymentMethod: string;
-  tokenPrice: number;
-  network: string;
-  userWallet: string;
-  wertData?: {
-    signatureValid: boolean;
-    orderId: string;
-  };
-}
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { 
   X, 
   ExternalLink, 
   Copy, 
   CheckCircle,
-  AlertTriangle,
   Clock,
   Receipt,
-  CreditCard,
   Wallet,
   Coins,
-  Shield,
-  ArrowRight
 } from 'lucide-react';
-import { useState } from 'react';
+
+interface Transaction {
+  id: number;
+  address: string;
+  transaction_hash: string;
+  chain_name: string;
+  event_name: string;
+  payment_type: 'native' | 'usdt';
+  deposit_amount: string;
+  token_amount: string;
+  block_number: number;
+  block_timestamp: Date;
+  created_at: Date;
+}
 
 interface TransactionDetailsModalProps {
   transaction: Transaction | null;
@@ -55,10 +51,16 @@ export function TransactionDetailsModal({
 
   if (!transaction) return null;
 
-  const statusIcon = {
-    pending: <Clock className="w-5 h-5 text-yellow-500" />,
-    successful: <CheckCircle className="w-5 h-5 text-green-500" />,
-    failed: <AlertTriangle className="w-5 h-5 text-red-500" />
+  const getExplorerUrl = (chainName: string, hash: string) => {
+    const explorers: { [key: string]: string } = {
+      'ethereum': 'https://etherscan.io',
+      'bsc': 'https://bscscan.com',
+      'polygon': 'https://polygonscan.com'
+    };
+    
+    const baseUrl = explorers[chainName.toLowerCase()];
+    if (!baseUrl) return '#';
+    return `${baseUrl}/tx/${hash}`;
   };
 
   return (
@@ -81,21 +83,13 @@ export function TransactionDetailsModal({
           {/* Header */}
           <div className="p-6 border-b border-border/50 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`
-                w-10 h-10 rounded-full flex items-center justify-center
-                ${transaction.status === 'successful' 
-                  ? 'bg-green-500/10' 
-                  : transaction.status === 'pending'
-                  ? 'bg-yellow-500/10'
-                  : 'bg-red-500/10'
-                }
-              `}>
-                {statusIcon[transaction.status]}
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500/10">
+                <Receipt className="w-5 h-5 text-blue-500" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold">Transaction Details</h2>
                 <p className="text-sm text-muted-foreground">
-                  ID: {transaction.id}
+                  {formatDistanceToNow(new Date(transaction.block_timestamp), { addSuffix: true })}
                 </p>
               </div>
             </div>
@@ -116,43 +110,32 @@ export function TransactionDetailsModal({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-accent/5 rounded-lg space-y-1">
-                  <div className="text-sm text-muted-foreground">Amount (Fiat)</div>
+                  <div className="text-sm text-muted-foreground">Deposit Amount</div>
                   <div className="text-lg font-semibold">
-                    ${transaction.fiatAmount.toLocaleString()}
+                    {parseFloat(transaction.deposit_amount).toFixed(6)} {transaction.payment_type.toUpperCase()}
                   </div>
                 </div>
                 <div className="p-4 bg-accent/5 rounded-lg space-y-1">
-                  <div className="text-sm text-muted-foreground">Amount (Crypto)</div>
+                  <div className="text-sm text-muted-foreground">Token Amount</div>
                   <div className="text-lg font-semibold">
-                    {transaction.cryptoAmount} {transaction.cryptoType}
+                    {parseFloat(transaction.token_amount).toFixed(2)} SWG
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Payment Details */}
+            {/* Transaction Details */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground">
-                Payment Details
+                Transaction Details
               </h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    {transaction.paymentMethod === 'wert' 
-                      ? <CreditCard className="w-4 h-4 text-accent" />
-                      : <Wallet className="w-4 h-4 text-accent" />
-                    }
-                    <span>Method</span>
-                  </div>
-                  <span className="capitalize">{transaction.paymentMethod}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
-                  <div className="flex items-center space-x-3">
                     <Receipt className="w-4 h-4 text-accent" />
-                    <span>Token Price</span>
+                    <span>Payment Type</span>
                   </div>
-                  <span>${transaction.tokenPrice}</span>
+                  <span className="capitalize">{transaction.payment_type}</span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
@@ -160,29 +143,39 @@ export function TransactionDetailsModal({
                     <Coins className="w-4 h-4 text-accent" />
                     <span>Network</span>
                   </div>
-                  <span>{transaction.network}</span>
+                  <span className="capitalize">{transaction.chain_name}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Clock className="w-4 h-4 text-accent" />
+                    <span>Block Number</span>
+                  </div>
+                  <span>{transaction.block_number}</span>
                 </div>
               </div>
             </div>
 
-            {/* Wallet & Security */}
+            {/* Wallet & Transaction Hash */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground">
-                Wallet & Security
+                Wallet & Transaction Hash
               </h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Wallet className="w-4 h-4 text-accent" />
-                    <span>Buyer Wallet</span>
+                    <span>Wallet Address</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="font-mono">{transaction.userWallet}</span>
+                    <span className="font-mono text-sm truncate max-w-[200px]">
+                      {transaction.address}
+                    </span>
                     <button
-                      onClick={() => copyToClipboard(transaction.userWallet, 'wallet')}
+                      onClick={() => copyToClipboard(transaction.address, 'address')}
                       className="p-1 hover:bg-accent/10 rounded-md transition-colors"
                     >
-                      {copied === 'wallet' 
+                      {copied === 'address' 
                         ? <CheckCircle className="w-4 h-4 text-green-500" />
                         : <Copy className="w-4 h-4" />
                       }
@@ -190,78 +183,26 @@ export function TransactionDetailsModal({
                   </div>
                 </div>
 
-                {transaction.paymentMethod === 'wert' && transaction.wertData && (
-                  <>
-                    <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Shield className="w-4 h-4 text-accent" />
-                        <span>Wert Signature</span>
-                      </div>
-                      <span className={
-                        transaction.wertData.signatureValid
-                          ? 'text-green-500'
-                          : 'text-red-500'
-                      }>
-                        {transaction.wertData.signatureValid ? 'Valid' : 'Invalid'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Receipt className="w-4 h-4 text-accent" />
-                        <span>Wert Order ID</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono">{transaction.wertData.orderId}</span>
-                        <button
-                          onClick={() => transaction.wertData && copyToClipboard(transaction.wertData.orderId, 'orderId')}
-                          className="p-1 hover:bg-accent/10 rounded-md transition-colors"
-                        >
-                          {copied === 'orderId'
-                            ? <CheckCircle className="w-4 h-4 text-green-500" />
-                            : <Copy className="w-4 h-4" />
-                          }
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Token Distribution */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                Token Distribution
-              </h3>
-              <div className="p-4 bg-accent/5 rounded-lg space-y-4">
-                <div className="flex items-center justify-between">
-                  <span>Distribution Status</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium
-                    ${transaction.status === 'successful' 
-                      ? 'bg-green-500/10 text-green-500' 
-                      : transaction.status === 'pending'
-                      ? 'bg-yellow-500/10 text-yellow-500'
-                      : 'bg-red-500/10 text-red-500'
-                    }`
-                  }>
-                    {transaction.status}
-                  </span>
-                </div>
-                
-                {transaction.status === 'successful' && (
-                  <div className="flex items-center justify-between">
-                    <span>Token Amount</span>
-                    <span className="font-semibold">
-                      {(transaction.fiatAmount / transaction.tokenPrice).toLocaleString()} Tokens
+                <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Receipt className="w-4 h-4 text-accent" />
+                    <span>Transaction Hash</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-mono text-sm truncate max-w-[200px]">
+                      {transaction.transaction_hash}
                     </span>
+                    <button
+                      onClick={() => copyToClipboard(transaction.transaction_hash, 'hash')}
+                      className="p-1 hover:bg-accent/10 rounded-md transition-colors"
+                    >
+                      {copied === 'hash'
+                        ? <CheckCircle className="w-4 h-4 text-green-500" />
+                        : <Copy className="w-4 h-4" />
+                      }
+                    </button>
                   </div>
-                )}
-
-                {transaction.status === 'pending' && (
-                  <div className="text-sm text-muted-foreground">
-                    Tokens will be distributed after transaction confirmation
-                  </div>
-                )}
+                </div>
               </div>
             </div>
 
@@ -272,10 +213,12 @@ export function TransactionDetailsModal({
               </h3>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => window.open(
-                    `https://${transaction.network.toLowerCase()}.etherscan.io/tx/${transaction.id}`,
-                    '_blank'
-                  )}
+                  onClick={() => {
+                    const url = getExplorerUrl(transaction.chain_name, transaction.transaction_hash);
+                    if (url !== '#') {
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
                   className="flex-1 flex items-center justify-center space-x-2 
                     px-4 py-2 bg-accent/10 hover:bg-accent/20 rounded-lg 
                     transition-colors"
@@ -283,20 +226,6 @@ export function TransactionDetailsModal({
                   <ExternalLink className="w-4 h-4" />
                   <span>View on Explorer</span>
                 </button>
-
-                {transaction.status === 'pending' && (
-                  <button
-                    onClick={() => {
-                      // Handle transaction verification/update
-                    }}
-                    className="flex-1 flex items-center justify-center space-x-2 
-                      px-4 py-2 bg-accent text-white rounded-lg 
-                      hover:bg-accent/90 transition-colors"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                    <span>Update Status</span>
-                  </button>
-                )}
               </div>
             </div>
           </div>
