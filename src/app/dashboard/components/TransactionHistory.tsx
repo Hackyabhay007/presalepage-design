@@ -13,22 +13,51 @@ interface Transaction {
   amount: string;
   tokenAmount: string;
   hash: string;
+  network: string;
 }
 
-const CONTRACT_ADDRESS = "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC".toLowerCase();
-const GETBLOCK_ENDPOINT = process.env.NEXT_PUBLIC_GETBLOCK_ENDPOINT;
+const NETWORK_CONFIGS = {
+  ethereum: {
+    address: "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC".toLowerCase(),
+    endpoint: process.env.NEXT_PUBLIC_ETH_GRAPHQL_ENDPOINT || "",
+    name: "ethereum"
+  },
+  bsc: {
+    address: "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC".toLowerCase(), // Replace with BSC address
+    endpoint: process.env.NEXT_PUBLIC_BSC_GRAPHQL_ENDPOINT || "",
+    name: "bsc"
+  },
+  polygon: {
+    address: "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC".toLowerCase(), // Replace with Polygon address
+    endpoint: process.env.NEXT_PUBLIC_POLYGON_GRAPHQL_ENDPOINT || "",
+    name: "polygon"
+  }
+};
 
-// ABI fragments for events
-const ABI = [
-  "event BoughtWithNative(address user, uint256 tokenDeposit, uint256 amount, uint256 timestamp)",
-  "event BoughtWithUSDT(address user, uint256 tokenDeposit, uint256 amount, uint256 timestamp)"
-];
-
-const provider = new ethers.providers.JsonRpcProvider(GETBLOCK_ENDPOINT);
-const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+// GraphQL query for events
+const EVENT_QUERY = `
+  query GetEvents($contract: String!, $fromBlock: Int!, $toBlock: Int!) {
+    logs(
+      filter: {
+        address: { is: $contract }
+        fromBlock: { ge: $fromBlock }
+        toBlock: { le: $toBlock }
+      }
+    ) {
+      items {
+        data
+        topics
+        transactionHash
+        blockNumber
+        logIndex
+        blockTimestamp
+      }
+    }
+  }
+`;
 
 export default function TransactionHistory() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<(Transaction & { network: string })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { address, isConnected } = useAccount();
 
@@ -40,70 +69,71 @@ export default function TransactionHistory() {
       }
 
       try {
+        const thirtyDaysAgo = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+
         setIsLoading(true);
-        const userAddress = address.toLowerCase();
-
-        console.log('Fetching transactions for address:', userAddress);
-
-        // Get current block and calculate fromBlock (30 days ago approximately)
-        const currentBlock = await provider.getBlockNumber();
-        const fromBlock = currentBlock - (6500 * 30); // ~30 days of blocks
-
-        // Get event signatures
-        const nativeEventSig = "BoughtWithNative(address,uint256,uint256,uint256)";
-        const usdtEventSig = "BoughtWithUSDT(address,uint256,uint256,uint256)";
-
-        // Create filter for both event types
-        const filter = {
-          address: CONTRACT_ADDRESS,
-          fromBlock,
-          toBlock: 'latest',
-          topics: [
-            [ethers.utils.id(nativeEventSig), ethers.utils.id(usdtEventSig)]
-          ]
-        };
-
-        console.log('Using filter:', filter);
-
-        // Fetch logs
-        const logs = await provider.getLogs(filter);
-        console.log('Found logs:', logs);
-
-        // Process logs into transactions
-        const processedTx: Transaction[] = [];
-
-        for (const log of logs) {
-          try {
-            const parsedLog = contract.interface.parseLog(log);
-            const block = await provider.getBlock(log.blockNumber);
-            
-            // Check if this event is for our address
-            if (parsedLog.args.user.toLowerCase() === userAddress) {
-              const isNativeEvent = log.topics[0] === ethers.utils.id(nativeEventSig);
-              const tokenDeposit = ethers.utils.formatEther(parsedLog.args.tokenDeposit);
-              const amount = ethers.utils.formatEther(parsedLog.args.amount);
-
-              processedTx.push({
-                id: `${log.transactionHash}-${log.logIndex}`,
-                timestamp: new Date(block.timestamp * 1000).toISOString(),
-                type: isNativeEvent ? 'native' : 'usdt',
-                amount: tokenDeposit,
-                tokenAmount: amount,
-                hash: log.transactionHash
+        const allTransactions = await Promise.all(
+          Object.entries(NETWORK_CONFIGS).map(async ([networkKey, config]) => {
+            try {
+              const response = await fetch(config.endpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-api-key': config.endpoint.split('/').pop() || '',
+                },
+                body: JSON.stringify({
+                  query: EVENT_QUERY,
+                  variables: {
+                    contract: config.address,
+                    fromBlock: thirtyDaysAgo,
+                    toBlock: currentTimestamp
+                  }
+                })
               });
-            }
-          } catch (error) {
-            console.error('Error processing log:', error);
-          }
-        }
 
-        // Sort by timestamp, most recent first
-        const sortedTx = processedTx.sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+              const data = await response.json();
+              const logs = data.data?.logs?.items || [];
+
+              // Event signatures
+              const nativeEventSig = ethers.utils.id("BoughtWithNative(address,uint256,uint256,uint256)");
+              const usdtEventSig = ethers.utils.id("BoughtWithUSDT(address,uint256,uint256,uint256)");
+
+              return logs
+                .filter((log: any) => {
+                  const eventSig = log.topics[0];
+                  return (eventSig === nativeEventSig || eventSig === usdtEventSig) &&
+                         log.topics[1]?.toLowerCase().includes(address.toLowerCase().slice(2));
+                })
+                .map((log: any) => {
+                  const isNative = log.topics[0] === nativeEventSig;
+                  const decodedData = ethers.utils.defaultAbiCoder.decode(
+                    ['uint256', 'uint256', 'uint256'],
+                    log.data
+                  );
+
+                  return {
+                    id: `${log.transactionHash}-${log.logIndex}`,
+                    timestamp: log.blockTimestamp,
+                    type: isNative ? 'native' : 'usdt',
+                    amount: ethers.utils.formatEther(decodedData[0]),
+                    tokenAmount: ethers.utils.formatEther(decodedData[1]),
+                    hash: log.transactionHash,
+                    network: config.name
+                  };
+                });
+            } catch (error) {
+              console.error(`Error fetching from ${networkKey}:`, error);
+              return [];
+            }
+          })
         );
 
-        console.log('Processed transactions:', sortedTx);
-        setTransactions(sortedTx);
+        const combinedTransactions = allTransactions
+          .flat()
+          .sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+
+        setTransactions(combinedTransactions);
       } catch (error) {
         console.error('Error fetching transactions:', error);
         setTransactions([]);
@@ -171,14 +201,14 @@ export default function TransactionHistory() {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <h4 className="font-medium">
-                  {tx.type === 'native' ? 'ETH Purchase' : 'USDT Purchase'}
+                  {tx.type === 'native' ? 'ETH Purchase' : 'USDT Purchase'} on {tx.network}
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(tx.timestamp), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(tx.timestamp * 1000), { addSuffix: true })}
                 </p>
               </div>
               <a
-                href={`https://etherscan.io/tx/${tx.hash}`}
+                href={`https://${tx.network === 'ethereum' ? '' : tx.network + '.'}etherscan.io/tx/${tx.hash}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-accent hover:text-accent/80 transition-colors"

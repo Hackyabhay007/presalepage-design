@@ -13,100 +13,161 @@ interface TokenPurchaseEvent {
   timestamp: string;
   eventType: 'BoughtWithNative' | 'BoughtWithUSDT';
   transactionHash: string;
+  network: string;
+  explorer: string;
 }
 
+// Network configurations
+const NETWORKS = {
+  eth: {
+    name: 'Ethereum',
+    rpcUrl: 'https://rpc.flashbots.net',
+    explorer: 'https://etherscan.io',
+    blocksPerDay: 7200
+  },
+  bsc: {
+    name: 'BSC',
+    rpcUrl: 'https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3',
+    explorer: 'https://bscscan.com',
+    blocksPerDay: 28800
+  },
+  polygon: {
+    name: 'Polygon',
+    rpcUrl: 'https://polygon-rpc.com',
+    explorer: 'https://polygonscan.com',
+    blocksPerDay: 43200
+  }
+};
+
 const CONTRACT_ADDRESS = "0x8b139E5b4Ad91E26b1c8b1445Ad488c5530EdFDC".toLowerCase();
-const GETBLOCK_ENDPOINT = process.env.NEXT_PUBLIC_GETBLOCK_ENDPOINT;
 
 const EVENT_SIGNATURES = {
   BoughtWithNative: "BoughtWithNative(address,uint256,uint256,uint256)",
   BoughtWithUSDT: "BoughtWithUSDT(address,uint256,uint256,uint256)"
 };
 
-const provider = new ethers.providers.JsonRpcProvider(GETBLOCK_ENDPOINT);
+// Create providers for each network
+const providers = Object.entries(NETWORKS).reduce((acc, [network, config]) => ({
+  ...acc,
+  [network]: new ethers.providers.JsonRpcProvider(config.rpcUrl)
+}), {} as { [key: string]: ethers.providers.JsonRpcProvider });
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<TokenPurchaseEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEvents = async () => {
+  const fetchEventsForNetwork = async (network: string, provider: ethers.providers.JsonRpcProvider) => {
+    try {
+      const currentBlock = await provider.getBlockNumber();
+      // Fetch last 2 hours of blocks instead of 24 hours to avoid rate limiting
+      const blocksPerHour = NETWORKS[network].blocksPerDay / 24;
+      const fromBlock = currentBlock - (blocksPerHour * 2);
+
+      // Fetch events in smaller chunks
+      const CHUNK_SIZE = 2000; // Number of blocks per request
+      const chunks = [];
+      
+      for (let startBlock = fromBlock; startBlock < currentBlock; startBlock += CHUNK_SIZE) {
+        const endBlock = Math.min(startBlock + CHUNK_SIZE - 1, currentBlock);
+        
+        // Add delay between chunks to avoid rate limiting
+        if (chunks.length > 0) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        const [nativeLogs, usdtLogs] = await Promise.all([
+          provider.getLogs({
+            address: CONTRACT_ADDRESS,
+            topics: [utils.id(EVENT_SIGNATURES.BoughtWithNative)],
+            fromBlock: startBlock,
+            toBlock: endBlock
+          }).catch(error => {
+            console.warn(`Error fetching native logs for ${network} chunk ${startBlock}-${endBlock}:`, error);
+            return [];
+          }),
+          provider.getLogs({
+            address: CONTRACT_ADDRESS,
+            topics: [utils.id(EVENT_SIGNATURES.BoughtWithUSDT)],
+            fromBlock: startBlock,
+            toBlock: endBlock
+          }).catch(error => {
+            console.warn(`Error fetching USDT logs for ${network} chunk ${startBlock}-${endBlock}:`, error);
+            return [];
+          })
+        ]);
+
+        chunks.push(...nativeLogs, ...usdtLogs);
+      }
+
+      // Process all logs
+      const processedLogs = chunks.map(log => ({
+        id: `${network}-${log.transactionHash}-${log.logIndex}`,
+        timestamp: new Date().toISOString(), // Will be updated when we fetch the block
+        eventType: log.topics[0] === utils.id(EVENT_SIGNATURES.BoughtWithNative) ? 'BoughtWithNative' : 'BoughtWithUSDT',
+        transactionHash: log.transactionHash,
+        network,
+        explorer: NETWORKS[network].explorer
+      }));
+
+      // Fetch timestamps in batches
+      const BATCH_SIZE = 10;
+      for (let i = 0; i < processedLogs.length; i += BATCH_SIZE) {
+        const batch = processedLogs.slice(i, i + BATCH_SIZE);
+        await Promise.all(
+          batch.map(async (log) => {
+            try {
+              const tx = await provider.getTransaction(log.transactionHash);
+              if (tx && tx.blockNumber) {
+                const block = await provider.getBlock(tx.blockNumber);
+                log.timestamp = new Date(block.timestamp * 1000).toISOString();
+              }
+            } catch (error) {
+              console.warn(`Error fetching timestamp for tx ${log.transactionHash}:`, error);
+            }
+          })
+        );
+        
+        // Add small delay between batches
+        if (i + BATCH_SIZE < processedLogs.length) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+
+      return processedLogs;
+    } catch (error) {
+      console.error(`Error fetching events for ${network}:`, error);
+      return [];
+    }
+  };
+
+  const fetchAllEvents = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      const currentBlock = await provider.getBlockNumber();
-      const fromBlock = currentBlock - 7200; // Last 24 hours approximately
-
-      // Get logs for BoughtWithNative events
-      const nativeEventTopic = utils.id(EVENT_SIGNATURES.BoughtWithNative);
-      const nativeLogs = await provider.getLogs({
-        address: CONTRACT_ADDRESS,
-        topics: [nativeEventTopic],
-        fromBlock,
-        toBlock: 'latest'
-      });
-
-      // Get logs for BoughtWithUSDT events
-      const usdtEventTopic = utils.id(EVENT_SIGNATURES.BoughtWithUSDT);
-      const usdtLogs = await provider.getLogs({
-        address: CONTRACT_ADDRESS,
-        topics: [usdtEventTopic],
-        fromBlock,
-        toBlock: 'latest'
-      });
-
-      console.log('Native logs:', nativeLogs);
-      console.log('USDT logs:', usdtLogs);
-
-      const processedEvents: TokenPurchaseEvent[] = [];
-
-      // Process native events
-      for (const log of nativeLogs) {
-        try {
-          const block = await provider.getBlock(log.blockNumber);
-          processedEvents.push({
-            id: `${log.transactionHash}-${log.logIndex}`,
-            timestamp: new Date(block.timestamp * 1000).toLocaleString(),
-            eventType: 'BoughtWithNative',
-            transactionHash: log.transactionHash
-          });
-        } catch (error) {
-          console.error('Error processing native log:', error, log);
-        }
-      }
-
-      // Process USDT events
-      for (const log of usdtLogs) {
-        try {
-          const block = await provider.getBlock(log.blockNumber);
-          processedEvents.push({
-            id: `${log.transactionHash}-${log.logIndex}`,
-            timestamp: new Date(block.timestamp * 1000).toLocaleString(),
-            eventType: 'BoughtWithUSDT',
-            transactionHash: log.transactionHash
-          });
-        } catch (error) {
-          console.error('Error processing USDT log:', error, log);
-        }
-      }
-
-      // Sort by timestamp, most recent first
-      const sortedEvents = processedEvents.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      const allEvents = await Promise.all(
+        Object.entries(providers).map(([network, provider]) => 
+          fetchEventsForNetwork(network, provider)
+        )
       );
 
-      setTransactions(sortedEvents);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching events:', err);
-      setError('Failed to fetch transaction events');
+      // Combine and sort all events by timestamp
+      const combinedEvents = allEvents
+        .flat()
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      setTransactions(combinedEvents);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setError('Failed to fetch transactions. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEvents();
+    fetchAllEvents();
   }, []);
 
   return (
@@ -114,7 +175,7 @@ export default function TransactionsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Token Purchase Transactions</h1>
         <button 
-          onClick={fetchEvents}
+          onClick={fetchAllEvents}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
         >
           <RefreshCcw size={16} />
@@ -148,6 +209,7 @@ export default function TransactionsPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Network</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Hash</th>
               </tr>
             </thead>
@@ -155,14 +217,17 @@ export default function TransactionsPage() {
               {transactions.map((tx) => (
                 <tr key={tx.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {tx.timestamp}
+                    {new Date(tx.timestamp).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {tx.eventType === 'BoughtWithNative' ? 'Purchase with ETH' : 'Purchase with USDT'}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {tx.network}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-500 hover:text-blue-700">
                     <a 
-                      href={`https://sepolia.etherscan.io/tx/${tx.transactionHash}`}
+                      href={`${tx.explorer}/tx/${tx.transactionHash}`}
                       target="_blank" 
                       rel="noopener noreferrer"
                     >
